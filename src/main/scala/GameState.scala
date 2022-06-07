@@ -1,63 +1,75 @@
 import EColour.EColour
 
-case class GameState(board: Set[Pawn], round: EColour) {
+case class GameState(board: Array[Pawn], round: EColour) {
 
-  def newState(from: PawnPosition, to: PawnPosition): GameState = {
+  def newState(move: PawnMove): GameState = {
 
-    val pawnToMove: Pawn = board
-      .filter(_.colour == round)
-      .filter(_.PawnPosition.x == from.x)
-      .filter(_.PawnPosition.y == from.y)
+    val oldPawn: Pawn = board
+      .filter(_.colour == round) // this is not necessary after validation
+      .filter(_.pawnPosition == move.from)
       .head
 
     val newPawn: Pawn = {
-      val position = PawnPosition(to.x, to.y)
-      Pawn(pawnToMove.colour, position)
+      val position = PawnPosition(move.to.x, move.to.y)
+      Pawn(oldPawn.colour, position)
     }
 
-    val newBoard: Set[Pawn] = board - pawnToMove + newPawn
-    val newRound: EColour = {
-      if(round == EColour.r) EColour.w
-      else EColour.r
+    val fx = move.from.x
+    val fy = move.from.y
+    val smashedPawn: Pawn = move.to match {
+      case o if move.to == PawnPosition(fx + 2, fy + 2) => board.filter(o => o.pawnPosition == PawnPosition(fx + 1, fy + 1)).head
+      case o if move.to == PawnPosition(fx + 2, fy - 2) => board.filter(o => o.pawnPosition == PawnPosition(fx + 1, fy - 1)).head
+      case o if move.to == PawnPosition(fx - 2, fy + 2) => board.filter(o => o.pawnPosition == PawnPosition(fx - 1, fy + 1)).head
+      case o if move.to == PawnPosition(fx - 2, fy - 2) => board.filter(o => o.pawnPosition == PawnPosition(fx - 1, fy - 1)).head
+      case _ => null
+    }
+
+    //newBoard //todo: this is totally shit
+    var newBoard: Array[Pawn] = null
+    //    val newBoard2: Array[Pawn] = board.filter(_ != oldPawn).filter(_ != smashedPawn) :+ newPawn
+    if (smashedPawn != null) {
+      newBoard = board
+        .updated(board.indexOf(oldPawn), Pawn(EColour.o, oldPawn.pawnPosition)) //wyczyść aktualną pozycję
+        .updated(board.indexOf(board.filter(_.pawnPosition == newPawn.pawnPosition).head), newPawn) //zmień puste pole na nowego pionka
+        .filter(_ != smashedPawn) :+ Pawn(EColour.o, smashedPawn.pawnPosition)
+    } else {
+      newBoard = board
+        .updated(board.indexOf(oldPawn), Pawn(EColour.o, oldPawn.pawnPosition)) //wyczyść aktualną pozycję
+        .updated(board.indexOf(board.filter(_.pawnPosition == newPawn.pawnPosition).head), newPawn) //zmień puste pole na nowego pionka
+    }
+
+
+    val tx = move.to.x
+    val ty = move.to.y
+    val isNextToSmash = {
+      val colour: EColour = round
+      val otherColour: EColour = if (colour == EColour.w || colour == EColour.W) EColour.r else if (colour == EColour.r || colour == EColour.R) EColour.w else EColour.o
+
+      move.to match {
+        case o if smashedPawn == null => false
+        case o if
+          board.exists(o => o.pawnPosition == PawnPosition(tx + 1, ty + 1) && o.colour == otherColour) &&
+          board.exists(o => o.pawnPosition == PawnPosition(tx + 2, ty + 2) && o.colour == EColour.o) => true
+        case o if
+          board.exists(o => o.pawnPosition == PawnPosition(tx + 1, ty - 1) && o.colour == otherColour) &&
+          board.exists(o => o.pawnPosition == PawnPosition(tx + 2, ty - 2) && o.colour == EColour.o) => true
+        case o if
+          board.exists(o => o.pawnPosition == PawnPosition(tx - 1, ty + 1) && o.colour == otherColour) &&
+          board.exists(o => o.pawnPosition == PawnPosition(tx - 2, ty + 2) && o.colour == EColour.o) => true
+        case o if
+          board.exists(o => o.pawnPosition == PawnPosition(tx - 1, ty - 1) && o.colour == otherColour) &&
+          board.exists(o => o.pawnPosition == PawnPosition(tx - 2, ty - 2) && o.colour == EColour.o) => true
+        case _ => false
+    }
+  }
+
+
+    val newRound: EColour = isNextToSmash match {
+      case false  => if (round == EColour.r) EColour.w else EColour.r
+      case true   => round
     }
 
     GameState(newBoard, newRound)
   }
 
-  def printBoard: Unit = {
-    val array2d = Array.ofDim[Char](8,8)
-    board.foreach(o => array2d(o.PawnPosition.x)(o.PawnPosition.y) = o.colour.toString.head)
-
-    println("current round: " + round)
-    array2d.map(_.mkString("     ")).foreach(println)
-  }
-
-  //todo: improve this converter
-  def toFEN: String = {
-    val array2d = Array.ofDim[Pawn](8,8)
-    board.foreach(o => array2d(o.PawnPosition.x)(o.PawnPosition.y) = o)
-
-    def formatRow(row: Array[Pawn]) : String = {
-      val sb = new StringBuilder
-      row.map{
-        case x if x!=null => x.colour.toString.head
-        case _ => "0"
-      }
-      .foreach(sb.append)
-      sb.toString()
-        .replaceAll("00000000", "8")
-        .replaceAll("0000000", "7")
-        .replaceAll("000000", "6")
-        .replaceAll("00000", "5")
-        .replaceAll("0000", "4")
-        .replaceAll("000", "3")
-        .replaceAll("00", "2")
-        .replaceAll("0", "1")
-    }
-
-    val sb2 = new StringBuilder
-    array2d.map(formatRow).foreach(o => sb2.append(o + "/"))
-    sb2.toString()
-
-  }
 }

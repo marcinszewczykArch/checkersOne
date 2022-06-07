@@ -1,5 +1,5 @@
 import EColour.EColour
 
-case class Pawn(colour: EColour, PawnPosition: PawnPosition) {
+case class Pawn(colour: EColour, pawnPosition: PawnPosition) {
   //validation
 }

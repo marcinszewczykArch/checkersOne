@@ -1,8 +1,10 @@
-import EColour.EColour
+package domain
+
+import domain.EColour.EColour
 
 case class GameState(board: Array[Pawn], round: EColour) {
 
-  def newState(move: PawnMove): GameState = {
+  def getNewState(move: PawnMove): GameState = {
 
     val oldPawn: Pawn = board
       .filter(_.colour == round) // this is not necessary after validation

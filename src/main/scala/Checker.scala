@@ -2,61 +2,61 @@
 //
 //object Checker extends App{
 //
-//  val initialState: GameState = {
-//    val wPawns: Set[Pawn] = Set(
-//      Pawn(EColour.w, PawnPosition(7, 0)),
-//      Pawn(EColour.w, PawnPosition(7, 2)),
-//      Pawn(EColour.w, PawnPosition(7, 4)),
-//      Pawn(EColour.w, PawnPosition(7, 6)),
+//  val initialState: domain.GameState = {
+//    val wPawns: Set[domain.Pawn] = Set(
+//      domain.Pawn(EColour.w, domain.PawnPosition(7, 0)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(7, 2)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(7, 4)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(7, 6)),
 //
-//      Pawn(EColour.w, PawnPosition(6, 1)),
-//      Pawn(EColour.w, PawnPosition(6, 3)),
-//      Pawn(EColour.w, PawnPosition(6, 5)),
-//      Pawn(EColour.w, PawnPosition(6, 7)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(6, 1)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(6, 3)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(6, 5)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(6, 7)),
 //
-//      Pawn(EColour.w, PawnPosition(5, 0)),
-//      Pawn(EColour.w, PawnPosition(5, 2)),
-//      Pawn(EColour.w, PawnPosition(5, 4)),
-//      Pawn(EColour.w, PawnPosition(5, 6))
+//      domain.Pawn(EColour.w, domain.PawnPosition(5, 0)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(5, 2)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(5, 4)),
+//      domain.Pawn(EColour.w, domain.PawnPosition(5, 6))
 //    )
-//    val rPawns: Set[Pawn] = Set(
-//      Pawn(EColour.r, PawnPosition(0, 1)),
-//      Pawn(EColour.r, PawnPosition(0, 3)),
-//      Pawn(EColour.r, PawnPosition(0, 5)),
-//      Pawn(EColour.r, PawnPosition(0, 7)),
+//    val rPawns: Set[domain.Pawn] = Set(
+//      domain.Pawn(EColour.r, domain.PawnPosition(0, 1)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(0, 3)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(0, 5)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(0, 7)),
 //
-//      Pawn(EColour.r, PawnPosition(1, 0)),
-//      Pawn(EColour.r, PawnPosition(1, 2)),
-//      Pawn(EColour.r, PawnPosition(1, 4)),
-//      Pawn(EColour.r, PawnPosition(1, 6)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(1, 0)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(1, 2)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(1, 4)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(1, 6)),
 //
-//      Pawn(EColour.r, PawnPosition(2, 1)),
-//      Pawn(EColour.r, PawnPosition(2, 3)),
-//      Pawn(EColour.r, PawnPosition(2, 5)),
-//      Pawn(EColour.r, PawnPosition(2, 7))
+//      domain.Pawn(EColour.r, domain.PawnPosition(2, 1)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(2, 3)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(2, 5)),
+//      domain.Pawn(EColour.r, domain.PawnPosition(2, 7))
 //    )
-//    val allPawns: Set[Pawn] = wPawns.concat(rPawns)
+//    val allPawns: Set[domain.Pawn] = wPawns.concat(rPawns)
 //
-//    GameState(allPawns, EColour.w)
+//    domain.GameState(allPawns, EColour.w)
 //  }
 //
-//  private def readFromUserFrom: PawnPosition = {
+//  private def readFromUserFrom: domain.PawnPosition = {
 //    println("fromX:")
 //    val fromX = scala.io.StdIn.readInt()
 //    println("fromY:")
 //    val fromY = scala.io.StdIn.readInt()
 //
-//    PawnPosition(fromX, fromY)
+//    domain.PawnPosition(fromX, fromY)
 //  }
 //
-//  private def readFromUserTo: PawnPosition = {
+//  private def readFromUserTo: domain.PawnPosition = {
 //
 //    println("toX:")
 //    val toX = scala.io.StdIn.readInt()
 //    println("toY:")
 //    val toY = scala.io.StdIn.readInt()
 //
-//    PawnPosition(toX, toY)
+//    domain.PawnPosition(toX, toY)
 //  }
 //
 //

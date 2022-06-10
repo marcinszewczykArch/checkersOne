@@ -1,11 +1,16 @@
-import EColour.EColour
+package service
+
+import domain.EColour.EColour
+import domain._
+import io.circe.Json
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import io.circe.generic.auto._
 
+
 object CheckersService {
 
-  def stateDecoder(state: GameState): Json  = {
+  def stateDecoder(state: GameState): Json = {
     case class State(board: String, currentColour: String)
 
     val boardArray: Array[(Int, EColour)] = state.board.map(o => (positionToIndex(o.pawnPosition), o.colour))
@@ -30,7 +35,7 @@ object CheckersService {
       case "w" => EColour.w
     }
 
-    GameState(board, round: EColour)
+    domain.GameState(board, round: EColour)
   }
 
   def moveEncoder(from: String, to: String): PawnMove = PawnMove(indexToPosition(from.toInt), indexToPosition(to.toInt))
@@ -43,18 +48,18 @@ object CheckersService {
 
 
     val xxx: Boolean = state.board.filter(_.colour == colour).exists(o =>
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 1, o.pawnPosition.y + 1) && p.colour == otherColour) &&
+      state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 1, o.pawnPosition.y + 1) && p.colour == otherColour) &&
         state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 2, o.pawnPosition.y + 2) && p.colour == EColour.o)
-      ||
+        ||
         state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 1, o.pawnPosition.y - 1) && p.colour == otherColour) &&
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 2, o.pawnPosition.y - 2) && p.colour == EColour.o)
-      ||
+          state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 2, o.pawnPosition.y - 2) && p.colour == EColour.o)
+        ||
         state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 1, o.pawnPosition.y + 1) && p.colour == otherColour) &&
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 2, o.pawnPosition.y + 2) && p.colour == EColour.o)
-      ||
+          state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 2, o.pawnPosition.y + 2) && p.colour == EColour.o)
+        ||
         state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 1, o.pawnPosition.y - 1) && p.colour == otherColour) &&
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 2, o.pawnPosition.y - 2) && p.colour == EColour.o)
-      )
+          state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 2, o.pawnPosition.y - 2) && p.colour == EColour.o)
+    )
 
     xxx
   }
@@ -78,17 +83,17 @@ object CheckersService {
 
     //bez bicia
     val moveWithoutSmash: Boolean = state.round match {
-        case EColour.w => move.to match {
-          case o if move.to == PawnPosition(fx - 1, fy + 1) => true
-          case o if move.to == PawnPosition(fx - 1, fy - 1) => true
-          case _ => false
-        }
-        case EColour.r => move.to match {
-          case o if move.to == PawnPosition(fx + 1, fy + 1) => true
-          case o if move.to == PawnPosition(fx + 1, fy - 1) => true
-          case _ => false
-        }
-  }
+      case EColour.w => move.to match {
+        case o if move.to == PawnPosition(fx - 1, fy + 1) => true
+        case o if move.to == PawnPosition(fx - 1, fy - 1) => true
+        case _ => false
+      }
+      case EColour.r => move.to match {
+        case o if move.to == PawnPosition(fx + 1, fy + 1) => true
+        case o if move.to == PawnPosition(fx + 1, fy - 1) => true
+        case _ => false
+      }
+    }
 
     //z biciem
     val moveWithSmash: Boolean = move.to match {
@@ -100,26 +105,26 @@ object CheckersService {
     }
 
     if (moveWithoutSmash && !sthToSmash)
-      Right(state.newState(move))
+      Right(state.getNewState(move))
     else if (moveWithoutSmash && sthToSmash)
       Left("you have sth to smash")
     else if (moveWithSmash && sthToSmash)
-      Right (state.newState(move))
+      Right(state.getNewState(move))
     else
       Left("moveNotAllowed")
   }
 
   def indexToPosition(index: Int): PawnPosition = index match {
-    case 0  => PawnPosition(0, 1)
-    case 1  => PawnPosition(0, 3)
-    case 2  => PawnPosition(0, 5)
-    case 3  => PawnPosition(0, 7)
-    case 4  => PawnPosition(1, 0)
-    case 5  => PawnPosition(1, 2)
-    case 6  => PawnPosition(1, 4)
-    case 7  => PawnPosition(1, 6)
-    case 8  => PawnPosition(2, 1)
-    case 9  => PawnPosition(2, 3)
+    case 0 => PawnPosition(0, 1)
+    case 1 => PawnPosition(0, 3)
+    case 2 => PawnPosition(0, 5)
+    case 3 => PawnPosition(0, 7)
+    case 4 => PawnPosition(1, 0)
+    case 5 => PawnPosition(1, 2)
+    case 6 => PawnPosition(1, 4)
+    case 7 => PawnPosition(1, 6)
+    case 8 => PawnPosition(2, 1)
+    case 9 => PawnPosition(2, 3)
     case 10 => PawnPosition(2, 5)
     case 11 => PawnPosition(2, 7)
     case 12 => PawnPosition(3, 0)

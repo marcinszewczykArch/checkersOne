@@ -1,8 +1,8 @@
 package service
 
 import domain.EColour.EColour
-import domain._
-import io.circe.Json
+import domain.EMoveType.EMoveType
+import domain.{EMoveType, _}
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import io.circe.generic.auto._
@@ -10,15 +10,20 @@ import io.circe.generic.auto._
 
 object CheckersService {
 
+  type ErrorMessage = String
+
   def stateDecoder(state: GameState): Json = {
     case class State(board: String, currentColour: String)
 
-    val boardArray: Array[(Int, EColour)] = state.board.map(o => (positionToIndex(o.pawnPosition), o.colour))
+    val boardArray: Array[(Int, EColour)] = state.board.map(o => (positionToIndex(o.position), o.colour))
     val board: String = (0 to 31)
-      .map(o => boardArray.filter(p => p._1 == o).head._2.toString)
+      .map(n => boardArray
+            .find(_._1 == n)
+            .map(_._2.toString)
+            .getOrElse("o"))
       .mkString("")
 
-    State(board, state.round.toString).asJson
+    State(board, state.colour.toString).asJson
   }
 
   def stateEncoder(boardString: String, roundString: String): GameState = {
@@ -26,6 +31,7 @@ object CheckersService {
     val board: Array[Pawn] = boardString
       .split("")
       .zipWithIndex
+      .filter(o => o._1 != "o")
       .map(o => (stringToColour(o._1), indexToPosition(o._2)))
       .map(o => Pawn(o._1, o._2))
 
@@ -40,78 +46,61 @@ object CheckersService {
 
   def moveEncoder(from: String, to: String): PawnMove = PawnMove(indexToPosition(from.toInt), indexToPosition(to.toInt))
 
-  type ErrorMessage = String
-
   def isSthToSmash(state: GameState): Boolean = {
-    val colour: EColour = state.round
-    val otherColour: EColour = if (colour == EColour.w || colour == EColour.W) EColour.r else if (colour == EColour.r || colour == EColour.R) EColour.w else EColour.o
+    val colour: EColour = state.colour
+    val board: Array[Pawn] = state.board
 
-
-    val xxx: Boolean = state.board.filter(_.colour == colour).exists(o =>
-      state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 1, o.pawnPosition.y + 1) && p.colour == otherColour) &&
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 2, o.pawnPosition.y + 2) && p.colour == EColour.o)
-        ||
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 1, o.pawnPosition.y - 1) && p.colour == otherColour) &&
-          state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x + 2, o.pawnPosition.y - 2) && p.colour == EColour.o)
-        ||
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 1, o.pawnPosition.y + 1) && p.colour == otherColour) &&
-          state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 2, o.pawnPosition.y + 2) && p.colour == EColour.o)
-        ||
-        state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 1, o.pawnPosition.y - 1) && p.colour == otherColour) &&
-          state.board.exists(p => p.pawnPosition == PawnPosition(o.pawnPosition.x - 2, o.pawnPosition.y - 2) && p.colour == EColour.o)
-    )
-
-    xxx
+    board.filter(_.colour == colour).exists(o => board.exists(p =>
+      p.colour != colour && (
+        (p.position == o.position.upRight()   && state.positionIsAvailable(p.position.upRight()))   ||
+        (p.position == o.position.upLeft()    && state.positionIsAvailable(p.position.upLeft()))    ||
+        (p.position == o.position.downRight() && state.positionIsAvailable(p.position.downRight())) ||
+        (p.position == o.position.downLeft()  && state.positionIsAvailable(p.position.downLeft())))
+    ))
   }
 
   def validateMove(state: GameState, move: PawnMove): Either[ErrorMessage, GameState] = {
-    val fx = move.from.x
-    val fy = move.from.y
 
-    //czy istnieje pionek, który chcesz przesunąć i czy jest twój? (to jest już walidowane na froncie)
-    val isPawnYours: Boolean = state.board.exists(o => o.pawnPosition == move.from && o.colour == state.round)
-    if (!isPawnYours)
-      return Left("pawn you want to move doesn't belong to you")
+    val FX = move.from.x
+    val FY = move.from.y
+    val TX = move.to.x
+    val TY = move.to.y
 
-    //anything to smash?
+    val moveType: Either[ErrorMessage, EMoveType] = {
+      if
+        (!state.pawnExists(move.from, state.colour))                                            Left("Wrong pawn chosen")
+      else if
+        (!state.positionIsAvailable(move.to))                                                   Left("Destination position is not available")
+
+      else if ((TX, TY) == (FX - 1, FY + 1) &&
+        state.colour == EColour.w)                                                              Right(EMoveType.SINGLE)
+      else if ((TX, TY) == (FX - 1, FY - 1) &&
+        state.colour == EColour.w)                                                              Right(EMoveType.SINGLE)
+      else if ((TX, TY) == (FX + 1, FY + 1) &&
+        state.colour == EColour.r)                                                              Right(EMoveType.SINGLE)
+      else if ((TX, TY) == (FX + 1, FY - 1) &&
+        state.colour == EColour.r)                                                              Right(EMoveType.SINGLE)
+
+      else if ((TX, TY) == (FX + 2, FY + 2) &&
+        state.pawnExists(PawnPosition(move.from.x + 1, move.from.y + 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+      else if ((TX, TY) == (FX - 2, FY - 2) &&
+        state.pawnExists(PawnPosition(move.from.x - 1, move.from.y - 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+      else if ((TX, TY) == (FX + 2, FY - 2) &&
+        state.pawnExists(PawnPosition(move.from.x + 1, move.from.y - 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+      else if ((TX, TY) == (FX - 2, FY + 2) &&
+        state.pawnExists(PawnPosition(move.from.x - 1, move.from.y + 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+
+      else                                                                                      Left("illegal move")
+    }
+
     val sthToSmash = isSthToSmash(state)
 
-    //you want to move to empty field?
-    val moveToEmptyField: Boolean = state.board.filter(_.colour == EColour.o).exists(o => o.pawnPosition == move.to)
-    if (!moveToEmptyField)
-      return Left("illegal move")
-
-    //bez bicia
-    val moveWithoutSmash: Boolean = state.round match {
-      case EColour.w => move.to match {
-        case o if move.to == PawnPosition(fx - 1, fy + 1) => true
-        case o if move.to == PawnPosition(fx - 1, fy - 1) => true
-        case _ => false
-      }
-      case EColour.r => move.to match {
-        case o if move.to == PawnPosition(fx + 1, fy + 1) => true
-        case o if move.to == PawnPosition(fx + 1, fy - 1) => true
-        case _ => false
-      }
+    moveType match {
+      case Right(EMoveType.SINGLE)     if !sthToSmash => Right(state.getNewState(move))
+      case Right(EMoveType.WITH_SMASH) if sthToSmash  => Right(state.getNewState(move))
+      case Left(error)                                => Left(error)
+      case _                                          => Left("illegal move")
     }
-
-    //z biciem
-    val moveWithSmash: Boolean = move.to match {
-      case o if move.to == PawnPosition(fx + 2, fy + 2) && state.board.exists(o => o.pawnPosition == PawnPosition(fx + 1, fy + 1) && o.colour != state.round) => true
-      case o if move.to == PawnPosition(fx + 2, fy - 2) && state.board.exists(o => o.pawnPosition == PawnPosition(fx + 1, fy - 1) && o.colour != state.round) => true
-      case o if move.to == PawnPosition(fx - 2, fy + 2) && state.board.exists(o => o.pawnPosition == PawnPosition(fx - 1, fy + 1) && o.colour != state.round) => true
-      case o if move.to == PawnPosition(fx - 2, fy - 2) && state.board.exists(o => o.pawnPosition == PawnPosition(fx - 1, fy - 1) && o.colour != state.round) => true
-      case _ => false
-    }
-
-    if (moveWithoutSmash && !sthToSmash)
-      Right(state.getNewState(move))
-    else if (moveWithoutSmash && sthToSmash)
-      Left("you have sth to smash")
-    else if (moveWithSmash && sthToSmash)
-      Right(state.getNewState(move))
-    else
-      Left("moveNotAllowed")
   }
 
   def indexToPosition(index: Int): PawnPosition = index match {
@@ -185,7 +174,6 @@ object CheckersService {
   }
 
   def stringToColour(colour: String): EColour = colour match {
-    case "o" => EColour.o
     case "r" => EColour.r
     case "R" => EColour.R
     case "w" => EColour.w

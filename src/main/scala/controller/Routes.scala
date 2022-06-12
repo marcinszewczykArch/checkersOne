@@ -2,7 +2,7 @@ package controller
 
 import cats.Monad
 import cats.effect.{ExitCode, IO, IOApp}
-import domain.{GameState, PawnMove}
+import domain.{GameState, Pawn, PawnMove}
 import io.circe.Json
 import org.http4s.HttpRoutes
 import org.http4s.circe._
@@ -36,7 +36,7 @@ object Routes extends IOApp {
     HttpRoutes.of[F] {
 
       case GET -> Root / "checkers" :?
-        boardQueryParamMatcher(board) +&
+          boardQueryParamMatcher(board) +&
           currentColourQueryParamMatcher(currentColour) +&
           moveFromQueryParamMatcher(moveFrom) +&
           moveToQueryParamMatcher(moveTo) =>
@@ -45,21 +45,22 @@ object Routes extends IOApp {
         val state: GameState = CheckersService.stateEncoder(board, currentColour)
         val move: PawnMove = CheckersService.moveEncoder(moveFrom, moveTo)
 
+        //validate state //todo
+//        for {
+//          s: Pawn <- state.board
+//        } yield pawnValidation(s)
+
         //validation move
         val newState: Either[ErrorMessage, GameState] = CheckersService.validateMove(state, move)
 
         if (newState.isLeft)
           NotAcceptable()
-
         else {
           //encode to State class
           val response: Json = CheckersService.stateDecoder(newState.right.get)
           Ok(response)
-
-          //          val newBoard: String = board.split("").updated(moveFrom.toInt, "o").updated(moveTo.toInt, currentColour).mkString("")
-          //          val newColour: String = if (currentColour == "r") "w" else "r"
-          //          Ok(State(newBoard, newColour).asJson)
         }
+
     }
 
 

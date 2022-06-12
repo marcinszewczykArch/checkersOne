@@ -2,76 +2,70 @@ package domain
 
 import domain.EColour.EColour
 
-case class GameState(board: Array[Pawn], round: EColour) {
+case class GameState(board: Array[Pawn], colour: EColour) {
 
   def getNewState(move: PawnMove): GameState = {
 
     val oldPawn: Pawn = board
-      .filter(_.colour == round) // this is not necessary after validation
-      .filter(_.pawnPosition == move.from)
+      .filter(_.colour == colour) // this is not necessary after validation
+      .filter(_.position == move.from)
       .head
-
     val newPawn: Pawn = {
       val position = PawnPosition(move.to.x, move.to.y)
       Pawn(oldPawn.colour, position)
     }
+    val smashedPawn: Pawn = getSmashedPawn(move)
 
-    val fx = move.from.x
-    val fy = move.from.y
-    val smashedPawn: Pawn = move.to match {
-      case o if move.to == PawnPosition(fx + 2, fy + 2) => board.filter(o => o.pawnPosition == PawnPosition(fx + 1, fy + 1)).head
-      case o if move.to == PawnPosition(fx + 2, fy - 2) => board.filter(o => o.pawnPosition == PawnPosition(fx + 1, fy - 1)).head
-      case o if move.to == PawnPosition(fx - 2, fy + 2) => board.filter(o => o.pawnPosition == PawnPosition(fx - 1, fy + 1)).head
-      case o if move.to == PawnPosition(fx - 2, fy - 2) => board.filter(o => o.pawnPosition == PawnPosition(fx - 1, fy - 1)).head
-      case _ => null
-    }
+    val newBoard: Array[Pawn] = board.filter(_ != oldPawn).filter(_ != smashedPawn) :+ newPawn
+    val newRound: EColour = checkNewRound(move)
 
-    //newBoard //todo: this is totally shit
-    var newBoard: Array[Pawn] = null
-    //    val newBoard2: Array[Pawn] = board.filter(_ != oldPawn).filter(_ != smashedPawn) :+ newPawn
-    if (smashedPawn != null) {
-      newBoard = board
-        .updated(board.indexOf(oldPawn), Pawn(EColour.o, oldPawn.pawnPosition)) //wyczyść aktualną pozycję
-        .updated(board.indexOf(board.filter(_.pawnPosition == newPawn.pawnPosition).head), newPawn) //zmień puste pole na nowego pionka
-        .filter(_ != smashedPawn) :+ Pawn(EColour.o, smashedPawn.pawnPosition)
-    } else {
-      newBoard = board
-        .updated(board.indexOf(oldPawn), Pawn(EColour.o, oldPawn.pawnPosition)) //wyczyść aktualną pozycję
-        .updated(board.indexOf(board.filter(_.pawnPosition == newPawn.pawnPosition).head), newPawn) //zmień puste pole na nowego pionka
-    }
+    GameState(newBoard, newRound)
+  }
 
+  def pawnExists(position: PawnPosition, colour: EColour): Boolean =
+    board.exists(o => o.position == position && o.colour == colour)
 
+  def positionIsAvailable(position: PawnPosition): Boolean =
+    !board.exists(o => o.position == position) && position.isOnTheBoard
+
+  def otherColour(): EColour = colour match {
+    case EColour.r => EColour.w
+    case EColour.w => EColour.r
+  }
+
+  //todo: to be moved to service
+  def isNextToSmash(move: PawnMove) = {
     val tx = move.to.x
     val ty = move.to.y
-    val isNextToSmash = {
-      val colour: EColour = round
-      val otherColour: EColour = if (colour == EColour.w || colour == EColour.W) EColour.r else if (colour == EColour.r || colour == EColour.R) EColour.w else EColour.o
 
-      move.to match {
-        case o if smashedPawn == null => false
-        case o if
-          board.exists(o => o.pawnPosition == PawnPosition(tx + 1, ty + 1) && o.colour == otherColour) &&
-          board.exists(o => o.pawnPosition == PawnPosition(tx + 2, ty + 2) && o.colour == EColour.o) => true
-        case o if
-          board.exists(o => o.pawnPosition == PawnPosition(tx + 1, ty - 1) && o.colour == otherColour) &&
-          board.exists(o => o.pawnPosition == PawnPosition(tx + 2, ty - 2) && o.colour == EColour.o) => true
-        case o if
-          board.exists(o => o.pawnPosition == PawnPosition(tx - 1, ty + 1) && o.colour == otherColour) &&
-          board.exists(o => o.pawnPosition == PawnPosition(tx - 2, ty + 2) && o.colour == EColour.o) => true
-        case o if
-          board.exists(o => o.pawnPosition == PawnPosition(tx - 1, ty - 1) && o.colour == otherColour) &&
-          board.exists(o => o.pawnPosition == PawnPosition(tx - 2, ty - 2) && o.colour == EColour.o) => true
-        case _ => false
+    val otherColour: EColour = if (colour == EColour.w || colour == EColour.W) EColour.r else EColour.w
+
+    move.to match {
+      case o if getSmashedPawn(move) == null => false
+      case o if pawnExists(PawnPosition(tx + 1, ty - 1), otherColour) && positionIsAvailable(PawnPosition(tx + 2, ty + 2)) => true
+      case o if pawnExists(PawnPosition(tx + 1, ty - 1), otherColour) && positionIsAvailable(PawnPosition(tx + 2, ty - 2)) => true
+      case o if pawnExists(PawnPosition(tx - 1, ty + 1), otherColour) && positionIsAvailable(PawnPosition(tx - 2, ty + 2)) => true
+      case o if pawnExists(PawnPosition(tx - 1, ty - 1), otherColour) && positionIsAvailable(PawnPosition(tx - 2, ty - 2)) => true
+      case _ => false
     }
   }
 
+  def getSmashedPawn(move: PawnMove): Pawn = {
+    val fx = move.from.x
+    val fy = move.from.y
 
-    val newRound: EColour = isNextToSmash match {
-      case false  => if (round == EColour.r) EColour.w else EColour.r
-      case true   => round
+    move.to match {
+    case o if move.to == PawnPosition(fx + 2, fy + 2) => board.filter(o => o.position == PawnPosition(fx + 1, fy + 1)).head
+    case o if move.to == PawnPosition(fx + 2, fy - 2) => board.filter(o => o.position == PawnPosition(fx + 1, fy - 1)).head
+    case o if move.to == PawnPosition(fx - 2, fy + 2) => board.filter(o => o.position == PawnPosition(fx - 1, fy + 1)).head
+    case o if move.to == PawnPosition(fx - 2, fy - 2) => board.filter(o => o.position == PawnPosition(fx - 1, fy - 1)).head
+    case _ => null
     }
+  }
 
-    GameState(newBoard, newRound)
+  def checkNewRound(move: PawnMove): EColour = isNextToSmash(move) match {
+    case false  => if (colour == EColour.r) EColour.w else EColour.r
+    case true   => colour
   }
 
 }

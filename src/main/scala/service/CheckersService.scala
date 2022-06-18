@@ -61,10 +61,10 @@ object CheckersService {
 
   def validateMove(state: GameState, move: PawnMove): Either[ErrorMessage, GameState] = {
 
-    val FX = move.from.x
-    val FY = move.from.y
-    val TX = move.to.x
-    val TY = move.to.y
+    val fx = move.from.x
+    val fy = move.from.y
+    val tx = move.to.x
+    val ty = move.to.y
 
     val moveType: Either[ErrorMessage, EMoveType] = {
       if
@@ -72,34 +72,35 @@ object CheckersService {
       else if
         (!state.positionIsAvailable(move.to))                                                   Left("Destination position is not available")
 
-      else if ((TX, TY) == (FX - 1, FY + 1) &&
+      else if ((tx, ty) == (fx - 1, fy + 1) &&
         state.colour == EColour.w)                                                              Right(EMoveType.SINGLE)
-      else if ((TX, TY) == (FX - 1, FY - 1) &&
+      else if ((tx, ty) == (fx - 1, fy - 1) &&
         state.colour == EColour.w)                                                              Right(EMoveType.SINGLE)
-      else if ((TX, TY) == (FX + 1, FY + 1) &&
+      else if ((tx, ty) == (fx + 1, fy + 1) &&
         state.colour == EColour.r)                                                              Right(EMoveType.SINGLE)
-      else if ((TX, TY) == (FX + 1, FY - 1) &&
+      else if ((tx, ty) == (fx + 1, fy - 1) &&
         state.colour == EColour.r)                                                              Right(EMoveType.SINGLE)
 
-      else if ((TX, TY) == (FX + 2, FY + 2) &&
+      else if ((tx, ty) == (fx + 2, fy + 2) &&
         state.pawnExists(PawnPosition(move.from.x + 1, move.from.y + 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
-      else if ((TX, TY) == (FX - 2, FY - 2) &&
+      else if ((tx, ty) == (fx - 2, fy - 2) &&
         state.pawnExists(PawnPosition(move.from.x - 1, move.from.y - 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
-      else if ((TX, TY) == (FX + 2, FY - 2) &&
+      else if ((tx, ty) == (fx + 2, fy - 2) &&
         state.pawnExists(PawnPosition(move.from.x + 1, move.from.y - 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
-      else if ((TX, TY) == (FX - 2, FY + 2) &&
+      else if ((tx, ty) == (fx - 2, fy + 2) &&
         state.pawnExists(PawnPosition(move.from.x - 1, move.from.y + 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
 
-      else                                                                                      Left("illegal move")
+      else                                                                                      Left("Illegal move")
     }
 
     val sthToSmash = isSthToSmash(state)
 
     moveType match {
       case Right(EMoveType.SINGLE)     if !sthToSmash => Right(state.getNewState(move))
+      case Right(EMoveType.SINGLE)     if sthToSmash  => Left("You have to take your opponent's piece!")
       case Right(EMoveType.WITH_SMASH) if sthToSmash  => Right(state.getNewState(move))
       case Left(error)                                => Left(error)
-      case _                                          => Left("illegal move")
+      case _                                          => Left("Illegal move")
     }
   }
 

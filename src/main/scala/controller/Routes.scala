@@ -4,7 +4,7 @@ import cats.Monad
 import cats.effect.{ExitCode, IO, IOApp}
 import domain.{GameState, Pawn, PawnMove}
 import io.circe.Json
-import org.http4s.HttpRoutes
+import org.http4s.{EmptyBody, EntityBody, Headers, HttpRoutes, HttpVersion, Response, Status}
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
@@ -12,8 +12,9 @@ import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
+import org.typelevel.vault.Vault
 import service.CheckersService
-import service.CheckersService.ErrorMessage
+import service.CheckersService.{ErrorMessage, moveEncoder, stateDecoder, stateEncoder, validateMove}
 
 import scala.concurrent.ExecutionContext.global
 
@@ -41,31 +42,15 @@ object Routes extends IOApp {
           moveFromQueryParamMatcher(moveFrom) +&
           moveToQueryParamMatcher(moveTo) =>
 
-        //board to 2d array
-        val state: GameState = CheckersService.stateEncoder(board, currentColour)
-        val move: PawnMove = CheckersService.moveEncoder(moveFrom, moveTo)
+        val state: GameState = stateEncoder(board, currentColour)
+        val move: PawnMove = moveEncoder(moveFrom, moveTo)
 
-        //validate state //todo
-//        for {
-//          s: Pawn <- state.board
-//        } yield pawnValidation(s)
-
-        //validation move
-        val newState: Either[ErrorMessage, GameState] = CheckersService.validateMove(state, move)
-
-        if (newState.isLeft)
-          NotAcceptable()
-        else {
-          //encode to State class
-          val response: Json = CheckersService.stateDecoder(newState.right.get)
-          Ok(response)
+        validateMove(state, move) match {
+          case Right(newState) => Ok(stateDecoder(newState))
+          case Left(error)     => NotAcceptable(error)
         }
-
     }
-
-
   }
-
 
   override def run(args: List[String]): IO[ExitCode] = {
 

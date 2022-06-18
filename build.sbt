@@ -18,4 +18,5 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick"  %% "slick-hikaricp"       % "3.3.3",
   "com.typesafe.slick"  %% "slick-codegen"        % "3.3.3",
   "mysql"               % "mysql-connector-java"  % "8.0.29",
+  "com.beachape"        %% "enumeratum"           % "1.7.0",
 )

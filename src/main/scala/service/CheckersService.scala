@@ -1,8 +1,8 @@
 package service
 
-import domain.EColour.EColour
-import domain.EMoveType.EMoveType
-import domain.{EMoveType, _}
+import domain.EPawnColour.EColour
+import domain.EPawnMoveType.EMoveType
+import domain.{EPawnMoveType, _}
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import io.circe.generic.auto._
@@ -36,9 +36,9 @@ object CheckersService {
       .map(o => Pawn(o._1, o._2))
 
 
-    val round: EColour.Value = roundString match {
-      case "r" => EColour.r
-      case "w" => EColour.w
+    val round: EPawnColour.Value = roundString match {
+      case "r" => EPawnColour.red
+      case "w" => EPawnColour.white
     }
 
     domain.GameState(board, round: EColour)
@@ -73,22 +73,22 @@ object CheckersService {
         (!state.positionIsAvailable(move.to))                                                   Left("Destination position is not available")
 
       else if ((tx, ty) == (fx - 1, fy + 1) &&
-        state.colour == EColour.w)                                                              Right(EMoveType.SINGLE)
+        state.colour == EPawnColour.white)                                                              Right(EPawnMoveType.SINGLE)
       else if ((tx, ty) == (fx - 1, fy - 1) &&
-        state.colour == EColour.w)                                                              Right(EMoveType.SINGLE)
+        state.colour == EPawnColour.white)                                                              Right(EPawnMoveType.SINGLE)
       else if ((tx, ty) == (fx + 1, fy + 1) &&
-        state.colour == EColour.r)                                                              Right(EMoveType.SINGLE)
+        state.colour == EPawnColour.red)                                                              Right(EPawnMoveType.SINGLE)
       else if ((tx, ty) == (fx + 1, fy - 1) &&
-        state.colour == EColour.r)                                                              Right(EMoveType.SINGLE)
+        state.colour == EPawnColour.red)                                                              Right(EPawnMoveType.SINGLE)
 
       else if ((tx, ty) == (fx + 2, fy + 2) &&
-        state.pawnExists(PawnPosition(move.from.x + 1, move.from.y + 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+        state.pawnExists(PawnPosition(move.from.x + 1, move.from.y + 1), state.otherColour()))  Right(EPawnMoveType.WITH_SMASH)
       else if ((tx, ty) == (fx - 2, fy - 2) &&
-        state.pawnExists(PawnPosition(move.from.x - 1, move.from.y - 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+        state.pawnExists(PawnPosition(move.from.x - 1, move.from.y - 1), state.otherColour()))  Right(EPawnMoveType.WITH_SMASH)
       else if ((tx, ty) == (fx + 2, fy - 2) &&
-        state.pawnExists(PawnPosition(move.from.x + 1, move.from.y - 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+        state.pawnExists(PawnPosition(move.from.x + 1, move.from.y - 1), state.otherColour()))  Right(EPawnMoveType.WITH_SMASH)
       else if ((tx, ty) == (fx - 2, fy + 2) &&
-        state.pawnExists(PawnPosition(move.from.x - 1, move.from.y + 1), state.otherColour()))  Right(EMoveType.WITH_SMASH)
+        state.pawnExists(PawnPosition(move.from.x - 1, move.from.y + 1), state.otherColour()))  Right(EPawnMoveType.WITH_SMASH)
 
       else                                                                                      Left("Illegal move")
     }
@@ -96,9 +96,9 @@ object CheckersService {
     val sthToSmash = isSthToSmash(state)
 
     moveType match {
-      case Right(EMoveType.SINGLE)     if !sthToSmash => Right(state.getNewState(move))
-      case Right(EMoveType.SINGLE)     if sthToSmash  => Left("You have to take your opponent's piece!")
-      case Right(EMoveType.WITH_SMASH) if sthToSmash  => Right(state.getNewState(move))
+      case Right(EPawnMoveType.SINGLE)     if !sthToSmash => Right(state.getNewState(move))
+      case Right(EPawnMoveType.SINGLE)     if sthToSmash  => Left("You have to take your opponent's piece!")
+      case Right(EPawnMoveType.WITH_SMASH) if sthToSmash  => Right(state.getNewState(move))
       case Left(error)                                => Left(error)
       case _                                          => Left("Illegal move")
     }
@@ -175,10 +175,10 @@ object CheckersService {
   }
 
   def stringToColour(colour: String): EColour = colour match {
-    case "r" => EColour.r
-    case "R" => EColour.R
-    case "w" => EColour.w
-    case "W" => EColour.W
+    case "r" => EPawnColour.red
+    case "R" => EPawnColour.R
+    case "w" => EPawnColour.white
+    case "W" => EPawnColour.W
   }
 
 }

@@ -1,25 +1,23 @@
 package domain
 
-import domain.EColour.EColour
+import domain.EPawnColour.EColour
 
 import scala.util.Try
 
-case class GameState(board: Array[Pawn], colour: EColour) {
+case class GameState(
+    status: GameStatus,
+//    movesNow: Side,
+//    board: Board,
+    board: Array[Pawn], //to be deleted and replaced by Board
+    colour: EColour, //to be deleted and replaced by movesNow
+    nextMoveBy: Pawn
+  ) {
+
+
 
   def getNewState(move: PawnMove): GameState = {
-//
-//    val oldPawn: Pawn = board
-//      .filter(_.colour == colour) // this is not necessary after validation
-//      .filter(_.position == move.from)
-//      .head
-
 
     val oldPawn: Option[Pawn] = findPawn(move.from, colour)
-
-//    val newPawn = {
-//      val position = PawnPosition(move.to.x, move.to.y)
-//      Pawn(oldPawn.colour, position)
-//    }
 
     val newPawn: Option[Pawn] = oldPawn.map(o => Pawn(o.colour, move.to))
 
@@ -37,16 +35,16 @@ case class GameState(board: Array[Pawn], colour: EColour) {
 
   def findPawn(position: PawnPosition, colour: EColour): Option[Pawn] = {
     board.find(o => o.position == position && o.colour == colour)
-  }
+  } //todo: this was moved to Board
 
-  def pawnExists(position: PawnPosition, colour: EColour): Boolean = findPawn(position, colour).isDefined
+  def pawnExists(position: PawnPosition, colour: EColour): Boolean = findPawn(position, colour).isDefined //todo: this was moved to Board
 
-  def positionIsAvailable(position: PawnPosition): Boolean = !board.exists(_.position == position) && position.isOnTheBoard
+  def positionIsAvailable(position: PawnPosition): Boolean = !board.exists(_.position == position) && position.isOnTheBoard //todo: this was moved to Board
 
-  //todo: case _
+  //todo: moved to Side opposit
   def otherColour(): EColour = colour match {
-    case EColour.r => EColour.w
-    case EColour.w => EColour.r
+    case EPawnColour.`red` => EPawnColour.white
+    case EPawnColour.`white` => EPawnColour.red
   }
 
   //todo: to be moved to service
@@ -86,3 +84,14 @@ case class GameState(board: Array[Pawn], colour: EColour) {
   }
 
 }
+
+//todo: to be activated!!
+//object GameState {
+//  def initial: GameState =
+//    GameState(
+//      status: Ongoing,
+//      movesNow: White,
+//      board: Board.initial,
+//      nextMoveBy: None
+//    )
+//}

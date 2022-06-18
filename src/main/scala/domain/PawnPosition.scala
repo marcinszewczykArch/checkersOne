@@ -1,6 +1,6 @@
 package domain
 
-case class PawnPosition(x: Int, y: Int) {
+final case class PawnPosition(x: Int, y: Int) {
 
   def isOnTheBoard: Boolean = {
     x >= 0 &&

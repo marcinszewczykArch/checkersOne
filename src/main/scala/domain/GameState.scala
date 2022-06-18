@@ -54,7 +54,7 @@ case class GameState(
     GameState(newStatus, newRound, newBoard, newNextMoveBy)
   }
 
-  def isNextToSmash(move: PawnMove) = {
+  def isNextToSmash(move: PawnMove): Boolean = {
     val tx = move.to.x
     val ty = move.to.y
 
@@ -103,58 +103,55 @@ case class GameState(
     ))
   }
 
-  def validateMove(move: PawnMove): Either[MoveValidationError, GameState] = {
-
-    val fx = move.from.x
-    val fy = move.from.y
-    val tx = move.to.x
-    val ty = move.to.y
-
-    val moveType: Either[MoveValidationError, PawnMoveType] = {
-      if
-        (!this.board.pawnExists(move.from, this.movesNow))    Left(MoveValidationError.WrongPawnColor)
-      else if
-        (!this.board.positionIsAvailable(move.to))            Left(MoveValidationError.DestinationNotAvailable)
-      else if
-        (move.from == move.to)                                Left(MoveValidationError.IdenticalStartAndDestinationPosition)
-      else if
-        (nextMoveBy == board.pieceAt(move.from))              Left(MoveValidationError.ContinueMultipleSmashing)
-
-      else if ((tx, ty) == (fx - 1, fy + 1) &&
-        this.movesNow == Side.White)                          Right(PawnMoveType.Single)
-      else if ((tx, ty) == (fx - 1, fy - 1) &&
-        this.movesNow == Side.White)                          Right(PawnMoveType.Single)
-      else if ((tx, ty) == (fx + 1, fy + 1) &&
-        this.movesNow == Side.Red)                            Right(PawnMoveType.Single)
-      else if ((tx, ty) == (fx + 1, fy - 1) &&
-        this.movesNow == Side.Red)                            Right(PawnMoveType.Single)
-
-      else if ((tx, ty) == (fx + 2, fy + 2) &&
-        this.board.pawnExists(PawnPosition(move.from.x + 1, move.from.y + 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-      else if ((tx, ty) == (fx - 2, fy - 2) &&
-        this.board.pawnExists(PawnPosition(move.from.x - 1, move.from.y - 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-      else if ((tx, ty) == (fx + 2, fy - 2) &&
-        this.board.pawnExists(PawnPosition(move.from.x + 1, move.from.y - 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-      else if ((tx, ty) == (fx - 2, fy + 2) &&
-        this.board.pawnExists(PawnPosition(move.from.x - 1, move.from.y + 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-
-      else                                                                                              Left(MoveValidationError.IllegalMove)
-    }
-
-    val sthToSmash = this.isSthToSmash
-
-    moveType match {
-      case Right(PawnMoveType.Single)     if !sthToSmash  => Right(this.getNewState(move))
-      case Right(PawnMoveType.Single)     if sthToSmash   => Left(MoveValidationError.OpponentPawnToTake)
-      case Right(PawnMoveType.WithSmash)  if sthToSmash   => Right(this.getNewState(move))
-      case Left(error)                                    => Left(error)
-      case _                                              => Left(MoveValidationError.IllegalMove)
-    }
-  }
-
-
+//  def validateMove(move: PawnMove): Either[MoveValidationError, GameState] = {
+//
+//    val fx = move.from.x
+//    val fy = move.from.y
+//    val tx = move.to.x
+//    val ty = move.to.y
+//
+//    val moveType: Either[MoveValidationError, PawnMoveType] = {
+//      if
+//        (!this.board.pawnExists(move.from, this.movesNow))    Left(MoveValidationError.WrongPawnColor)
+//      else if
+//        (!this.board.positionIsAvailable(move.to))            Left(MoveValidationError.DestinationNotAvailable)
+//      else if
+//        (move.from == move.to)                                Left(MoveValidationError.IdenticalStartAndDestinationPosition)
+//      else if
+//        (nextMoveBy == board.pieceAt(move.from))              Left(MoveValidationError.ContinueMultipleSmashing)
+//
+//      else if ((tx, ty) == (fx - 1, fy + 1) &&
+//        this.movesNow == Side.White)                          Right(PawnMoveType.Single)
+//      else if ((tx, ty) == (fx - 1, fy - 1) &&
+//        this.movesNow == Side.White)                          Right(PawnMoveType.Single)
+//      else if ((tx, ty) == (fx + 1, fy + 1) &&
+//        this.movesNow == Side.Red)                            Right(PawnMoveType.Single)
+//      else if ((tx, ty) == (fx + 1, fy - 1) &&
+//        this.movesNow == Side.Red)                            Right(PawnMoveType.Single)
+//
+//      else if ((tx, ty) == (fx + 2, fy + 2) &&
+//        this.board.pawnExists(PawnPosition(move.from.x + 1, move.from.y + 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
+//      else if ((tx, ty) == (fx - 2, fy - 2) &&
+//        this.board.pawnExists(PawnPosition(move.from.x - 1, move.from.y - 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
+//      else if ((tx, ty) == (fx + 2, fy - 2) &&
+//        this.board.pawnExists(PawnPosition(move.from.x + 1, move.from.y - 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
+//      else if ((tx, ty) == (fx - 2, fy + 2) &&
+//        this.board.pawnExists(PawnPosition(move.from.x - 1, move.from.y + 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
+//
+//      else                                                                                              Left(MoveValidationError.IllegalMove)
+//    }
+//
+//    val sthToSmash = this.isSthToSmash
+//
+//    moveType match {
+//      case Right(PawnMoveType.Single)     if !sthToSmash  => Right(this.getNewState(move))
+//      case Right(PawnMoveType.Single)     if sthToSmash   => Left(MoveValidationError.OpponentPawnToTake)
+//      case Right(PawnMoveType.WithSmash)  if sthToSmash   => Right(this.getNewState(move))
+//      case Left(error)                                    => Left(error)
+//      case _                                              => Left(MoveValidationError.IllegalMove)
+//    }
+//  }
 }
-
 
 object GameState {
   def initial: GameState =

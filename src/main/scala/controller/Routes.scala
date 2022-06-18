@@ -2,7 +2,7 @@ package controller
 
 import cats.{Monad, Show}
 import cats.effect.{ExitCode, IO, IOApp}
-import domain.{GameState, MoveValidationError, Pawn, PawnMove}
+import domain.{GameState, MoveValidationError, Pawn, PawnMove, PawnMoveType, ValidateMove}
 import io.circe.Json
 import org.http4s.{EmptyBody, EntityBody, Headers, HttpRoutes, HttpVersion, Response, Status}
 import org.http4s.circe._
@@ -13,6 +13,7 @@ import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
 import cats.implicits._
+import domain.ValidateMove.ErrorOr
 
 import scala.concurrent.ExecutionContext.global
 
@@ -43,10 +44,11 @@ object Routes extends IOApp {
         val state: GameState = GameState.fromString(board, currentColour)
         val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
 
-        state.validateMove(move) match {
+        ValidateMove.apply().apply(move, state) match {
           case Right(newState)           => Ok(GameState.toJson(newState))
           case Left(validationError)     => NotAcceptable(validationError.show)
         }
+
     }
   }
 

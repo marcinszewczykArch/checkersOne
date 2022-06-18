@@ -1,8 +1,8 @@
 package controller
 
-import cats.Monad
+import cats.{Monad, Show}
 import cats.effect.{ExitCode, IO, IOApp}
-import domain.{GameState, Pawn, PawnMove}
+import domain.{GameState, MoveValidationError, Pawn, PawnMove}
 import io.circe.Json
 import org.http4s.{EmptyBody, EntityBody, Headers, HttpRoutes, HttpVersion, Response, Status}
 import org.http4s.circe._
@@ -12,9 +12,7 @@ import org.http4s.implicits._
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
-import org.typelevel.vault.Vault
-import service.CheckersService
-import service.CheckersService.{ErrorMessage, moveEncoder, stateDecoder, stateEncoder, validateMove}
+import cats.implicits._
 
 import scala.concurrent.ExecutionContext.global
 
@@ -42,12 +40,12 @@ object Routes extends IOApp {
           moveFromQueryParamMatcher(moveFrom) +&
           moveToQueryParamMatcher(moveTo) =>
 
-        val state: GameState = stateEncoder(board, currentColour)
-        val move: PawnMove = moveEncoder(moveFrom, moveTo)
+        val state: GameState = GameState.fromString(board, currentColour)
+        val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
 
-        validateMove(state, move) match {
-          case Right(newState) => Ok(stateDecoder(newState))
-          case Left(error)     => NotAcceptable(error)
+        state.validateMove(move) match {
+          case Right(newState)           => Ok(GameState.toJson(newState))
+          case Left(validationError)     => NotAcceptable(validationError.show)
         }
     }
   }

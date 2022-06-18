@@ -1,7 +1,3 @@
 package domain
 
-import domain.EPawnColour.EColour
-
-case class Pawn(colour: EColour, position: PawnPosition) {
-  //validation
-}
+final case class Pawn(side: Side, pawnType: PawnType, position: PawnPosition)

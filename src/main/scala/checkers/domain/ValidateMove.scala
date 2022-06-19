@@ -8,7 +8,7 @@ import checkers.domain.Side._
 trait ValidateMove {
   def apply(
              move: PawnMove,
-             gameState: GameState
+             gameState: GameState //todo: this take game state, but from user we get only board and current colour (others are by default)
            ): ErrorOr[GameState]
 }
 
@@ -48,31 +48,28 @@ object ValidateMove {
       )
 
     def validateMoveType(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
-      val fx = move.from.x
-      val fy = move.from.y
-      val tx = move.to.x
-      val ty = move.to.y
       val otherSide = gameState.movesNow.opposite
       val thisSide  = gameState.movesNow
       val board  = gameState.board
 
-      if      ((tx, ty) == (fx - 1, fy + 1) && thisSide == White)
+      if      (move.to == move.from.upLeft()    && thisSide == White)
         Right(Single)
-      else if ((tx, ty) == (fx - 1, fy - 1) && thisSide == White)
+      else if (move.to == move.from.downLeft()  && thisSide == White)
         Right(Single)
-      else if ((tx, ty) == (fx + 1, fy + 1) && thisSide == Red)
+      else if (move.to == move.from.upRight()   && thisSide == Red)
         Right(Single)
-      else if ((tx, ty) == (fx + 1, fy - 1) && thisSide == Red)
+      else if (move.to == move.from.downRight() && thisSide == Red)
         Right(Single)
 
-      else if ((tx, ty) == (fx + 2, fy + 2) && board.pawnExists(PawnPosition(fx + 1, fy + 1), otherSide))
+      else if (move.to == move.from.doubleUpLeft()    && board.pawnExists(move.from.upLeft(), otherSide))
         Right(WithSmash)
-      else if ((tx, ty) == (fx - 2, fy - 2) && board.pawnExists(PawnPosition(fx - 1, fy - 1), otherSide))
+      else if (move.to == move.from.doubleDownLeft()  && board.pawnExists(move.from.downLeft(), otherSide))
         Right(WithSmash)
-      else if ((tx, ty) == (fx + 2, fy - 2) && board.pawnExists(PawnPosition(fx + 1, fy - 1), otherSide))
+      else if (move.to == move.from.doubleUpRight()   && board.pawnExists(move.from.upRight(), otherSide))
         Right(WithSmash)
-      else if ((tx, ty) == (fx - 2, fy + 2) && board.pawnExists(PawnPosition(fx - 1, fy + 1), otherSide))
+      else if (move.to == move.from.doubleDownRight() && board.pawnExists(move.from.downRight(), otherSide))
         Right(WithSmash)
+
       else
         Left(MoveValidationError.IllegalMove)
     }

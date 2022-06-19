@@ -1,5 +1,7 @@
 package checkers.domain
 
+import checkers.domain.Board.EMPTY_POSITION
+import checkers.domain.PawnPosition.{availablePositions, toIndex}
 import checkers.domain.PawnType.Regular
 import checkers.domain.Side.{Red, White}
 
@@ -13,9 +15,20 @@ final case class Board (pawnsArray: Array[Pawn]) {
 
   def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty && position.isOnTheBoard
 
+  override def toString: String = {
+    val boardArray: Array[(Int, Side)] = this.pawnsArray.map(o => (toIndex(o.position), o.side))
+    availablePositions.indices.map(n =>
+      boardArray
+        .find(_._1 == n)
+        .map(_._2.tag)
+        .getOrElse(EMPTY_POSITION)).mkString("")
+  }
+
 }
 
 object Board {
+  final val EMPTY_POSITION = "o"
+
   def initial: Board = {
     new Board(
       Array(

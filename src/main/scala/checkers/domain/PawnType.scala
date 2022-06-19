@@ -1,4 +1,4 @@
-package domain
+package checkers.domain
 
 import enumeratum._
 

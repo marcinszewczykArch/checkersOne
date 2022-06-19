@@ -1,6 +1,6 @@
-package domain
+package checkers.domain
 
-import domain.Side.{Red, White}
+import checkers.domain.Side.{Red, White}
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import io.circe.generic.auto._
@@ -143,6 +143,6 @@ object GameState {
       case "w" =>  White
     }
 
-    domain.GameState(GameStatus.Ongoing, round, Board(board), None) //todo: game status and nextMoveBy to be added!!!
+    GameState(GameStatus.Ongoing, round, Board(board), None) //todo: game status and nextMoveBy to be added!!!
   }
 }

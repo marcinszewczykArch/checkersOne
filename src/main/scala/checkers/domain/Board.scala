@@ -1,7 +1,7 @@
-package domain
+package checkers.domain
 
-import domain.PawnType.Regular
-import domain.Side.{Red, White}
+import checkers.domain.PawnType.Regular
+import checkers.domain.Side.{Red, White}
 
 final case class Board (pawnsArray: Array[Pawn]) {
 

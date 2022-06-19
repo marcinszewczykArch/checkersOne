@@ -1,4 +1,4 @@
-package domain
+package checkers.domain
 
 case class PawnMove(from: PawnPosition, to: PawnPosition) {
   //validation

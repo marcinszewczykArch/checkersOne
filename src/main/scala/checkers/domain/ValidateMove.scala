@@ -1,9 +1,9 @@
-package domain
+package checkers.domain
 
-import domain.MoveValidationError._
-import domain.ValidateMove.ErrorOr
-import domain.PawnMoveType._
-import domain.Side._
+import checkers.domain.MoveValidationError._
+import checkers.domain.ValidateMove.ErrorOr
+import checkers.domain.PawnMoveType._
+import checkers.domain.Side._
 
 trait ValidateMove {
   def apply(

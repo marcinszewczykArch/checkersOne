@@ -2,7 +2,7 @@ package controller
 
 import cats.{Monad, Show}
 import cats.effect.{ExitCode, IO, IOApp}
-import domain.{GameState, MoveValidationError, Pawn, PawnMove, PawnMoveType, ValidateMove}
+import checkers.domain.{GameState, MoveValidationError, Pawn, PawnMove, PawnMoveType, ValidateMove}
 import io.circe.Json
 import org.http4s.{EmptyBody, EntityBody, Headers, HttpRoutes, HttpVersion, Response, Status}
 import org.http4s.circe._
@@ -13,7 +13,7 @@ import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
 import cats.implicits._
-import domain.ValidateMove.ErrorOr
+import checkers.domain.ValidateMove.ErrorOr
 
 import scala.concurrent.ExecutionContext.global
 

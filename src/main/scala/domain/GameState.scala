@@ -1,5 +1,6 @@
 package domain
 
+import domain.Side.{Red, White}
 import io.circe.Json
 import io.circe.syntax.EncoderOps
 import io.circe.generic.auto._
@@ -16,9 +17,7 @@ case class GameState(
   //todo: to produce Option
   def getNewState(move: PawnMove): GameState = {
 
-    //todo: add validation
-
-    val oldPawn: Option[Pawn] = board.findPawn(move.from, movesNow)
+    val oldPawn: Option[Pawn] = board.pawnAt(move.from)
 
     val newPawn: Option[Pawn] = oldPawn.map(o => Pawn(o.side, o.pawnType, move.to))
 
@@ -34,10 +33,10 @@ case class GameState(
     val newRound: Side = checkNewRound(move)
 
     val newStatus: GameStatus = {
-      if (newBoard.pawnsArray.filter(_.side == Side.White).isEmpty)
-        GameStatus.Win(Side.Red)
-      else if (newBoard.pawnsArray.filter(_.side == Side.Red).isEmpty)
-        GameStatus.Win(Side.White)
+      if (!newBoard.pawnsArray.exists(_.side == White))
+        GameStatus.Win(Red)
+      else if (!newBoard.pawnsArray.exists(_.side == Red))
+        GameStatus.Win(White)
 //    else if (15 moves with queen without smashing) todo: add
 //      GameStatus.Draw
       else
@@ -46,7 +45,7 @@ case class GameState(
 
     val newNextMoveBy: Option[Pawn] = {
       if (newRound == movesNow)
-        newBoard.pieceAt(move.to)
+        newBoard.pawnAt(move.to)
       else
         None
     }
@@ -73,12 +72,13 @@ case class GameState(
   def getSmashedPawn(move: PawnMove): Pawn = {
     val fx = move.from.x
     val fy = move.from.y
+    val pawns = board.pawnsArray
 
     move.to match {
-      case o if move.to == PawnPosition(fx + 2, fy + 2) => board.pawnsArray.filter(o => o.position == PawnPosition(fx + 1, fy + 1)).head
-      case o if move.to == PawnPosition(fx + 2, fy - 2) => board.pawnsArray.filter(o => o.position == PawnPosition(fx + 1, fy - 1)).head
-      case o if move.to == PawnPosition(fx - 2, fy + 2) => board.pawnsArray.filter(o => o.position == PawnPosition(fx - 1, fy + 1)).head
-      case o if move.to == PawnPosition(fx - 2, fy - 2) => board.pawnsArray.filter(o => o.position == PawnPosition(fx - 1, fy - 1)).head
+      case o if move.to == PawnPosition(fx + 2, fy + 2) => pawns.filter(_.position == PawnPosition(fx + 1, fy + 1)).head
+      case o if move.to == PawnPosition(fx + 2, fy - 2) => pawns.filter(_.position == PawnPosition(fx + 1, fy - 1)).head
+      case o if move.to == PawnPosition(fx - 2, fy + 2) => pawns.filter(_.position == PawnPosition(fx - 1, fy + 1)).head
+      case o if move.to == PawnPosition(fx - 2, fy - 2) => pawns.filter(_.position == PawnPosition(fx - 1, fy - 1)).head
       case _ => null
     }
   }
@@ -102,62 +102,13 @@ case class GameState(
           (p.position == o.position.downLeft()  && this.board.positionIsAvailable(p.position.downLeft())))
     ))
   }
-
-//  def validateMove(move: PawnMove): Either[MoveValidationError, GameState] = {
-//
-//    val fx = move.from.x
-//    val fy = move.from.y
-//    val tx = move.to.x
-//    val ty = move.to.y
-//
-//    val moveType: Either[MoveValidationError, PawnMoveType] = {
-//      if
-//        (!this.board.pawnExists(move.from, this.movesNow))    Left(MoveValidationError.WrongPawnColor)
-//      else if
-//        (!this.board.positionIsAvailable(move.to))            Left(MoveValidationError.DestinationNotAvailable)
-//      else if
-//        (move.from == move.to)                                Left(MoveValidationError.IdenticalStartAndDestinationPosition)
-//      else if
-//        (nextMoveBy == board.pieceAt(move.from))              Left(MoveValidationError.ContinueMultipleSmashing)
-//
-//      else if ((tx, ty) == (fx - 1, fy + 1) &&
-//        this.movesNow == Side.White)                          Right(PawnMoveType.Single)
-//      else if ((tx, ty) == (fx - 1, fy - 1) &&
-//        this.movesNow == Side.White)                          Right(PawnMoveType.Single)
-//      else if ((tx, ty) == (fx + 1, fy + 1) &&
-//        this.movesNow == Side.Red)                            Right(PawnMoveType.Single)
-//      else if ((tx, ty) == (fx + 1, fy - 1) &&
-//        this.movesNow == Side.Red)                            Right(PawnMoveType.Single)
-//
-//      else if ((tx, ty) == (fx + 2, fy + 2) &&
-//        this.board.pawnExists(PawnPosition(move.from.x + 1, move.from.y + 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-//      else if ((tx, ty) == (fx - 2, fy - 2) &&
-//        this.board.pawnExists(PawnPosition(move.from.x - 1, move.from.y - 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-//      else if ((tx, ty) == (fx + 2, fy - 2) &&
-//        this.board.pawnExists(PawnPosition(move.from.x + 1, move.from.y - 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-//      else if ((tx, ty) == (fx - 2, fy + 2) &&
-//        this.board.pawnExists(PawnPosition(move.from.x - 1, move.from.y + 1), this.movesNow.opposite))  Right(PawnMoveType.WithSmash)
-//
-//      else                                                                                              Left(MoveValidationError.IllegalMove)
-//    }
-//
-//    val sthToSmash = this.isSthToSmash
-//
-//    moveType match {
-//      case Right(PawnMoveType.Single)     if !sthToSmash  => Right(this.getNewState(move))
-//      case Right(PawnMoveType.Single)     if sthToSmash   => Left(MoveValidationError.OpponentPawnToTake)
-//      case Right(PawnMoveType.WithSmash)  if sthToSmash   => Right(this.getNewState(move))
-//      case Left(error)                                    => Left(error)
-//      case _                                              => Left(MoveValidationError.IllegalMove)
-//    }
-//  }
 }
 
 object GameState {
   def initial: GameState =
     GameState(
       status = GameStatus.Ongoing,
-      movesNow = Side.White,
+      movesNow = White,
       board = Board.initial,
       nextMoveBy = None
     )
@@ -188,8 +139,8 @@ object GameState {
 
 
     val round: Side = roundString match {
-      case "r" => Side.Red
-      case "w" =>  Side.White
+      case "r" => Red
+      case "w" =>  White
     }
 
     domain.GameState(GameStatus.Ongoing, round, Board(board), None) //todo: game status and nextMoveBy to be added!!!

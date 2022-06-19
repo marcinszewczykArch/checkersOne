@@ -18,7 +18,7 @@ object ValidateMove {
   def apply(): ValidateMove = new ValidateMove {
 
     override def apply(move: PawnMove, gameState: GameState): ErrorOr[GameState] = for {
-      pawn      <- gameState.board.pieceAt(move.from).toRight(NoPawnAtStartingPosition)
+      pawn      <- gameState.board.pawnAt(move.from).toRight(NoPawnAtStartingPosition)
       _         <- startAndDestinationCoordinatesDiffer(move)
       _         <- pawnColourIsCorrect(pawn, gameState, move)
       _         <- pawnIsCorrectIfMultipleSmashingContinues(gameState, move)
@@ -42,7 +42,7 @@ object ValidateMove {
 
     def pawnIsCorrectIfMultipleSmashingContinues(gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =
       Either.cond(
-        test = gameState.nextMoveBy.isEmpty || gameState.nextMoveBy == gameState.board.pieceAt(move.from),
+        test = gameState.nextMoveBy.isEmpty || gameState.nextMoveBy == gameState.board.pawnAt(move.from),
         right = move,
         left = ContinueMultipleSmashing
       )

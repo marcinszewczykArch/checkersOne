@@ -1,7 +1,9 @@
 package multiplayer
 
 import cats.implicits._
+import checkers.CheckersCodecs.gameStateEncoder
 import checkers.domain.{GameState, PawnMove, ValidateMove}
+import io.circe.syntax.EncoderOps
 import multiplayer.players.domain.Player
 import multiplayer.rooms.domain.Room
 
@@ -22,6 +24,7 @@ case class ChatStateNew(
 
         val textArray: Array[String] = text.split("/")
 
+          //example input with move: "woooooooooooooooooooooooooooooow/w/31/27/"
         if (textArray.length == 5) {
 
             val board = textArray(0)
@@ -33,9 +36,10 @@ case class ChatStateNew(
           val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
 
           ValidateMove.apply().apply(move, state) match {
-            case Right(newState)        => (this, sendToRoom(room, newState.toString)) //todo: to return http response
+            case Right(newState)        => (this, sendToRoom(room, newState.asJson.toString)) //todo: to return http response
             case Left(validationError)  => (this, sendToRoom(room, validationError.show)) //todo: to return http response
           }
+
         } else {
         (this, sendToRoom(room, s"${player.name.value}: $text"))
       }

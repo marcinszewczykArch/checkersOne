@@ -1,5 +1,7 @@
 package multiplayer
 
+import cats.implicits._
+import checkers.domain.{GameState, PawnMove, ValidateMove}
 import multiplayer.players.domain.Player
 import multiplayer.rooms.domain.Room
 
@@ -17,7 +19,26 @@ case class ChatStateNew(
 
     case Chat(player: Player, text: String) => userRooms.get(player) match {
       case Some(room) =>
+
+        val textArray: Array[String] = text.split("/")
+
+        if (textArray.length == 5) {
+
+            val board = textArray(0)
+            val currentColour = textArray(1)
+            val moveFrom = textArray(2)
+            val moveTo = textArray(3)
+
+          val state: GameState = GameState.fromString(board, currentColour)
+          val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
+
+          ValidateMove.apply().apply(move, state) match {
+            case Right(newState)        => (this, sendToRoom(room, newState.toString)) //todo: to return http response
+            case Left(validationError)  => (this, sendToRoom(room, validationError.show)) //todo: to return http response
+          }
+        } else {
         (this, sendToRoom(room, s"${player.name.value}: $text"))
+      }
 
       case None =>
         (this, Seq(SendToUser(player, "You are not currently in a room")))

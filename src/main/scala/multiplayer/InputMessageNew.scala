@@ -10,10 +10,9 @@ import multiplayer.rooms.domain.{Room, RoomId, RoomName}
 sealed trait InputMessageNew {
   val player: Player
 }
-case class Chat(player: Player, text: String)         extends InputMessageNew
-case class EnterRoom(player: Player, room: Room)    extends InputMessageNew
-case class Disconnect(player: Player)                 extends InputMessageNew
-
+case class Chat(player: Player, text: String)                         extends InputMessageNew
+case class EnterRoom(player: Player, room: Room)                      extends InputMessageNew
+case class Disconnect(player: Player)                                 extends InputMessageNew
 
 object InputMessageNew {
   val DefaultRoomName = "default"

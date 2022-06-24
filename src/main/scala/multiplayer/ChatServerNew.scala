@@ -8,8 +8,6 @@ import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 
-import scala.concurrent.duration._
-
 object ChatServerNew extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = {
     val httpPort: Int = 9000
@@ -21,7 +19,7 @@ object ChatServerNew extends IOApp {
 
       exitCode <- {
         val httpStream = ServerStreamNew.stream[IO](httpPort, ref, queue, topic)
-        val keepAlive  = Stream.awakeEvery[IO](30.seconds).map(_ => KeepAlive).through(topic.publish)
+//        val keepAlive  = Stream.awakeEvery[IO](30.seconds).map(_ => KeepAlive).through(topic.publish)
 
         val processingStream = queue.dequeue
           .evalMap(msg => ref.modify(_.process(msg)))
@@ -29,7 +27,7 @@ object ChatServerNew extends IOApp {
           .through(topic.publish)
 
         // fs2 Streams must be "pulled" to process messages. Drain will perpetually pull our top-level streams
-        Stream(httpStream, keepAlive, processingStream)
+        Stream(httpStream, processingStream) //todo: keepAlive removed
           .parJoinUnbounded
           .compile
           .drain

@@ -1,5 +1,6 @@
 package multiplayer
 
+import checkers.domain.GameState
 import multiplayer.players.domain.Player
 import org.http4s.BuildInfo
 
@@ -26,7 +27,12 @@ case class SendToUsers(users: Set[Player], text: String) extends OutputMessageNe
   override def toString: String                       = text
 }
 
-case object KeepAlive extends OutputMessageNew {
-  override def forPlayer(targetPlayer: Player) = true
-  override def toString: String                = ""
+case class SendGameStateToUsers(users: Set[Player], state: GameState) extends OutputMessageNew {
+  override def forPlayer(targetUser: Player): Boolean = users.contains(targetUser)
+  override def toString: String                       = state.toString
 }
+
+//case object KeepAlive extends OutputMessageNew {
+//  override def forPlayer(targetPlayer: Player) = true
+//  override def toString: String                = ""
+//}

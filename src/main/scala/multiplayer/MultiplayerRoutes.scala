@@ -1,12 +1,10 @@
 package multiplayer
 
-
 import cats.effect.concurrent.Ref
 import cats.effect.{ContextShift, Sync}
 import fs2.concurrent.{Queue, Topic}
 import fs2.{Pipe, Stream}
-import multiplayer.domain.UuidString
-import multiplayer.players.domain.{Player, PlayerId, PlayerName}
+import multiplayer.players.domain.{Player}
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.websocket.WebSocketBuilder
@@ -14,30 +12,30 @@ import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.{Close, Text}
 
 
-class ChatRoutesNew[F[_]: Sync: ContextShift](
-                                               chatState: Ref[F, ChatStateNew],
-                                               queue: Queue[F, InputMessageNew],
-                                               topic: Topic[F, OutputMessageNew]
+class MultiplayerRoutes[F[_]: Sync: ContextShift](
+                                                   state: Ref[F, MultiplayerState],
+                                                   queue: Queue[F, InputMessage],
+                                                   topic: Topic[F, OutputMessage]
                                              ) extends Http4sDsl[F] {
 
   val routes: HttpRoutes[F] = HttpRoutes.of[F] {
 
-    case GET -> Root / "ws" / userName =>
+    case GET -> Root / "ws" / playerName =>
       // Routes messages from our "topic" to a WebSocket
       val toClient: Stream[F, WebSocketFrame.Text] = topic
         .subscribe(1000)
-        .filter(_.forPlayer(Player(PlayerId(UuidString(userName)), PlayerName(userName))))
+        .filter(_.forPlayer(Player(playerName)))
         .map(msg => Text(msg.toString))
 
 
       def processInput(wsfStream: Stream[F, WebSocketFrame]): Stream[F, Unit] = {
-      val player: Player = Player(PlayerId(UuidString(userName)), PlayerName(userName))
+      val player: Player = Player(playerName)
 
-        val entryStream: Stream[F, InputMessageNew] = Stream.emits(Seq(EnterRoom(player, InputMessageNew.DefaultRoom)))
+        val entryStream: Stream[F, InputMessage] = Stream.emits(Seq(Chat(player, s"Welcome in checkersOne ${player.name}!")))
 
-        val parsedWebSocketInput: Stream[F, InputMessageNew] = wsfStream.collect {
-          case Text(text, _) => InputMessageNew.parse(player, text)
-          case Close(_) => Disconnect(player)
+        val parsedWebSocketInput: Stream[F, InputMessage] = wsfStream.collect {
+          case Text(text, _)  => InputMessage.parse(player, text)
+          case Close(_)       => Disconnect(player)
         }
 
         (entryStream ++ parsedWebSocketInput).through(queue.enqueue)

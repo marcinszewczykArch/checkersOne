@@ -13,7 +13,7 @@ import org.http4s.{HttpApp, HttpRoutes}
 
 import scala.concurrent.ExecutionContext
 
-object MultiplayerRoutes_bootcampStyle extends IOApp {
+object Z_MultiplayerRoutes_bootcampStyle extends IOApp {
 
   private val echoRoute = HttpRoutes.of[IO] {
 

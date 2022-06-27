@@ -8,14 +8,14 @@ import org.http4s.implicits.http4sKleisliResponseSyntaxOptionT
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 
-object ChatServerNew extends IOApp {
+object MultiplayerServer extends IOApp {
   override def run(args: List[String]): IO[ExitCode] = {
     val httpPort: Int = 9000
 
     for (
-      queue <- Queue.unbounded[IO, InputMessageNew];
-      topic <- Topic[IO, OutputMessageNew](SendToUsers(Set.empty, ""));
-      ref   <- Ref.of[IO, ChatStateNew](ChatStateNew());
+      queue <- Queue.unbounded[IO, InputMessage];
+      topic <- Topic[IO, OutputMessage](SendToUsers(List.empty, ""));
+      ref   <- Ref.of[IO, MultiplayerState](MultiplayerState());
 
       exitCode <- {
         val httpStream = ServerStreamNew.stream[IO](httpPort, ref, queue, topic)
@@ -27,7 +27,7 @@ object ChatServerNew extends IOApp {
           .through(topic.publish)
 
         // fs2 Streams must be "pulled" to process messages. Drain will perpetually pull our top-level streams
-        Stream(httpStream, processingStream) //todo: keepAlive removed
+        Stream(httpStream, processingStream)
           .parJoinUnbounded
           .compile
           .drain
@@ -40,15 +40,15 @@ object ServerStreamNew {
   // Builds a stream for HTTP events processed by our router
   def stream[F[_]: ConcurrentEffect: Timer: ContextShift](
                                                            port: Int,
-                                                           chatState: Ref[F, ChatStateNew],
-                                                           queue: Queue[F, InputMessageNew],
-                                                           topic: Topic[F, OutputMessageNew]
+                                                           chatState: Ref[F, MultiplayerState],
+                                                           queue: Queue[F, InputMessage],
+                                                           topic: Topic[F, OutputMessage]
                                                          ): fs2.Stream[F, ExitCode] =
     BlazeServerBuilder[F]
       .bindHttp(port, "0.0.0.0")
       .withHttpApp(
         Router(
-          "/" -> new ChatRoutesNew[F](chatState, queue, topic).routes
+          "/" -> new MultiplayerRoutes[F](chatState, queue, topic).routes
         ).orNotFound
       )
       .serve

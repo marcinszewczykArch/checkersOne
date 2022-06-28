@@ -51,7 +51,7 @@ object CheckersRoutes extends IOApp {
       ).reduce(_ <+> _).orNotFound
 
     BlazeServerBuilder[IO](global)
-      .bindHttp(8085, "localhost")
+      .bindHttp(9000, "localhost")
       .withHttpApp(CORS(httpApp))
       .serve
       .compile

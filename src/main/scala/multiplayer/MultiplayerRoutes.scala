@@ -31,14 +31,15 @@ class MultiplayerRoutes[F[_]: Sync: ContextShift](
       def processInput(wsfStream: Stream[F, WebSocketFrame]): Stream[F, Unit] = {
       val player: Player = Player(playerName)
 
-        val entryStream: Stream[F, InputMessage] = Stream.emits(Seq(Chat(player, s"Welcome in checkersOne ${player.name}!")))
+        val entryStream: Stream[F, InputMessage]    = Stream.emits(Seq(Chat(player, s"Welcome in checkersOne ${player.name}!")))
+        val playersInGame: Stream[F, InputMessage]  = Stream.emits(Seq(PlayersInGame(player)))
 
         val parsedWebSocketInput: Stream[F, InputMessage] = wsfStream.collect {
           case Text(text, _)  => InputMessage.parse(player, text)
           case Close(_)       => Disconnect(player)
         }
 
-        (entryStream ++ parsedWebSocketInput).through(queue.enqueue)
+        (playersInGame ++ entryStream ++ parsedWebSocketInput).through(queue.enqueue)
       }
 
       val inputPipe: Pipe[F, WebSocketFrame, Unit] = processInput

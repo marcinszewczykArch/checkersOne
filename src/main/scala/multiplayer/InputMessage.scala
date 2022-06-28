@@ -14,6 +14,7 @@ case class ListPlayers(player: Player)                                extends In
 case class Error(player: Player)                                      extends InputMessage
 case class MakeMove(player: Player, board: String, colour: String,
                     from: String, to: String)                         extends InputMessage
+case class PlayersInGame(player: Player)                              extends InputMessage
 
 object InputMessage {
 

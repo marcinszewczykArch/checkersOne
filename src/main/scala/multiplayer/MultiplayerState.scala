@@ -21,6 +21,8 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       case None       => (this, Seq(SendToUser(player, s"${player.name}: $text")))
     }
 
+    case PlayersInGame(player: Player) => addToGame(player)
+
     case EnterRoom(player, toRoom) => findRoomByPlayer(player) match {
       case None       => addToRoom(player, toRoom)
       case Some(room) => (this, Seq(SendToUser(player, s"You are already in the room! Leave '${room.name}' first")))
@@ -96,19 +98,27 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
 
   private def disconnectPlayer(player: Player): (MultiplayerState, Seq[OutputMessage]) = findRoomByPlayer(player) match {
     case Some(room) =>
-      val nextMembers: List[Player] = room.players.filterNot(_ == player)
+      val newPlayers: List[Player] = room.players.filterNot(_ == player)
+      val listOfPlayers: String = players.filterNot(_ == player).map(_.name).mkString(",")
 
       val nextState: MultiplayerState =
-        if (nextMembers.isEmpty)
+        if (newPlayers.isEmpty)
           MultiplayerState(players.filterNot(_ == player), rooms.filterNot(_ == room)) //remove room from state
         else
-          MultiplayerState(players.filterNot(_ == player), rooms.filterNot(_ == room) :+ Room(room.name, nextMembers))  //replace room in state
+          MultiplayerState(players.filterNot(_ == player), rooms.filterNot(_ == room) :+ Room(room.name, newPlayers))  //replace room in state
 
-      // Send to "previous" room population to include the leaving user
-      (nextState, sendToRoom(room, s"${player.name} has left game"))
+      val combinedMessage: Seq[OutputMessage] =
+        sendToRoom(room, s"${player.name} has left game").concat(
+          Seq(SendToUsers(newPlayers :+ player, s"/pla $listOfPlayers")))
+
+      (nextState, combinedMessage)
 
     case None =>
-      (this, Nil)
+
+      val newPlayers: List[Player] = players.filterNot(_ == player)
+      val listOfPlayers: String = newPlayers.map(_.name).mkString(",")
+      val nextState: MultiplayerState = MultiplayerState(newPlayers, this.rooms)
+      (nextState, Seq(SendToUsers(newPlayers :+ player, s"/pla $listOfPlayers")))
   }
 
   private def addToRoom(player: Player, roomName: String): (MultiplayerState, Seq[OutputMessage]) = {
@@ -128,6 +138,16 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       // Send to "next" room population to include the joining user
       (nextState, nextState.sendToRoom(newRoom, s"${player.name} has joined ${room.name}"))
     }
+  }
+
+  private def addToGame(player: Player): (MultiplayerState, Seq[OutputMessage]) = {
+      val newPlayers = (players :+ player).distinct
+      val listOfPlayers: String = newPlayers.map(_.name).mkString(",")
+
+      val nextState: MultiplayerState = MultiplayerState(newPlayers, this.rooms)
+
+      // Send to "next" room population to include the joining user
+      (nextState, Seq(SendToUsers(newPlayers :+ player, s"/pla $listOfPlayers")))
   }
 
 }

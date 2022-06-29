@@ -98,7 +98,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
         val move: PawnMove    = PawnMove.fromString(moveFrom, moveTo)
 
         ValidateMove.apply().apply(move, state) match {
-          case Right(newState)        => (this, sendToRoom(room, newState.asJson.toString)) //todo: to return http response
+          case Right(newGameState)        => (this, sendToRoom(room, "/move " + newGameState.asJson.toString)) //todo: to return http response
           case Left(validationError)  => (this, sendToRoom(room, validationError.show)) //todo: to return http response
         }
 
@@ -115,7 +115,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
   }
 
   private def sendStateToAll(state: MultiplayerState): Seq[OutputMessage] = {
-    Seq(SendToUsers(state.players, state.asJson.toString()))
+    Seq(SendToUsers(state.players, "/state" + state.asJson.toString()))
   }
 
   private def findRoomByPlayer(player: Player): Option[Room] = rooms.find(_.players.contains(player))

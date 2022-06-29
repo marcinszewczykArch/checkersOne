@@ -23,7 +23,7 @@ object ValidateMove {
       _         <- pawnColourIsCorrect(pawn, gameState, move)
       _         <- pawnIsCorrectIfMultipleSmashingContinues(gameState, move)
       moveType  <- validateMoveType(gameState, move)
-      gameState <- smashIfNecessary(gameState, moveType, move)
+      gameState <- getNewState(gameState, moveType, move)
     } yield gameState
 
     def startAndDestinationCoordinatesDiffer(move: PawnMove): ErrorOr[PawnMove] =
@@ -74,7 +74,7 @@ object ValidateMove {
         Left(MoveValidationError.IllegalMove)
     }
 
-    def smashIfNecessary(gameState: GameState, moveType: PawnMoveType, move: PawnMove): ErrorOr[GameState] = {
+    def getNewState(gameState: GameState, moveType: PawnMoveType, move: PawnMove): ErrorOr[GameState] = {
       val sthToSmash: Boolean = gameState.isSthToSmash
 
       moveType match {

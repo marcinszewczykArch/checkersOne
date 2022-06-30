@@ -12,7 +12,7 @@ import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
-
+//import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext.global
 
 object CheckersRoutes extends IOApp {
@@ -51,7 +51,7 @@ object CheckersRoutes extends IOApp {
       ).reduce(_ <+> _).orNotFound
 
     BlazeServerBuilder[IO](global)
-      .bindHttp(9000, "localhost")
+      .bindHttp(9001, "localhost")
       .withHttpApp(CORS(httpApp))
       .serve
       .compile

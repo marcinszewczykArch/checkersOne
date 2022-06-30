@@ -73,20 +73,12 @@ x
 H.idea/libraries/sbt__org_http4s_http4s_blaze_server_2_13_0_21_22_jar.xml,b\9\b9d6957714af68809885293462c815630655e082
 v
 F.idea/libraries/sbt__org_http4s_http4s_blaze_core_2_13_0_21_22_jar.xml,5\9\599663323c8597b1ac102674453b8d49cb39732b
-9
-	build.sbt,7\4\74b95601c3a6d9d565cd312fac64094ec0f9d847
-]
--src/main/scala/checkers/domain/PawnMove.scala,7\b\7bc5aca8791a8b532b4269e7708beb86b7c1eb5d
-Y
-)src/main/scala/checkers/domain/Side.scala,9\a\9a7ce516a1804636898b71b496f0a20658b4335a
 Y
 )src/main/scala/checkers/domain/Pawn.scala,9\4\9459284debd99d77bef3916b69d5359c8eebc3d0
 Z
 *src/main/scala/checkers/domain/Board.scala,b\8\b861dce4141e27ba3b53d2f7b1a81e9e98631642
 b
 2src/main/scala/multiplayer/rooms/domain/Room.scala,c\9\c96ff7eb6da34e672288288a4faa478aba405e05
-b
-2src/main/scala/multiplayer/MultiplayerServer.scala,4\a\4a50f50328e1b8420af3b20073079028e534ccd4
 S
 #.idea/modules/checkersOne-build.iml,2\f\2fa323b7d1c1028ed026034f764f43694ec32f36
 e

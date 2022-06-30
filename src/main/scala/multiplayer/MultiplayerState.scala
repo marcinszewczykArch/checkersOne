@@ -8,12 +8,19 @@ import multiplayer.MultiplayerCodecs.multiplayerStateEncoder
 import multiplayer.players.domain.Player
 import multiplayer.rooms.domain.Room
 
+
+
 object MultiplayerState {
   // Default constructor
   def apply(): MultiplayerState = MultiplayerState(List.empty, List.empty)
 }
 
 case class MultiplayerState(players: List[Player], rooms: List[Room]) {
+  //todo: move to enum
+  val STATE: String = "/state"
+  val MOVE: String  = "/move"
+  val CHAT: String  = "/chat"
+  val ERROR: String = "/error"
 
   def process(msg: InputMessage): (MultiplayerState, Seq[OutputMessage]) = msg match {
 
@@ -42,7 +49,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       case Some(room) =>
         val newRooms: List[Room] = excludePlayerFromRoom(player, room)
         val newState: MultiplayerState = MultiplayerState(newPlayers, newRooms) //replace room in state
-        val message: Seq[OutputMessage] = sendToRoom(room, s"${player.name} has left game").concat(sendStateToAll(newState))
+        val message: Seq[OutputMessage] = sendToRoom(room, "/chat" + s"${player.name} has left game").concat(sendStateToAll(newState))
         (newState, message)
 
       case None =>
@@ -53,21 +60,21 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
 
   private def enterRoom(player: Player, roomName: String): (MultiplayerState, Seq[OutputMessage]) = findRoomByPlayer(player) match {
     case Some(_) =>
-      (this, Seq(SendToUser(player, "You are already in the room. Leave current room first")))
+      (this, Seq(SendToUser(player, "/error" + "You are already in the room. Leave current room first")))
 
     case None    =>
       val room: Room = findRoomByName(roomName).getOrElse(Room(roomName, List())) //take from rooms or create new room
       val nextMembers: List[Player] = room.players :+ player
 
       if (nextMembers.size > 2) {
-        (this, Seq(SendToUser(player, "This room is full, try to find another one")))
+        (this, Seq(SendToUser(player, "/error" + "This room is full, try to find another one")))
 
       } else {
         val newRoom = Room(room.name, nextMembers)
         val newRooms = rooms.filterNot(_ == room) :+ newRoom
         val newState = MultiplayerState(players, newRooms)
 
-        val message: Seq[OutputMessage] = sendToRoom(newRoom, s"${player.name} has joined room").concat(sendStateToAll(newState))
+        val message: Seq[OutputMessage] = sendToRoom(newRoom, "/chat" + s"${player.name} has joined room").concat(sendStateToAll(newState))
         (newState, message)
       }
   }
@@ -77,7 +84,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       val newRooms: List[Room] = excludePlayerFromRoom(player, room)
       val newState: MultiplayerState = MultiplayerState(players, newRooms) //replace room in state //replace room in state
 
-      val message: Seq[OutputMessage] = sendToRoom(room, s"${player.name} has left room").concat(sendStateToAll(newState))
+      val message: Seq[OutputMessage] = sendToRoom(room, "/chat" + s"${player.name} has left room").concat(sendStateToAll(newState))
       (newState, message)
 
     case None =>
@@ -85,7 +92,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
   }
 
   private def sendChatMsg(player: Player, text: String) = findRoomByPlayer(player) match {
-    case Some(room) => (this, sendToRoom(room, s"${player.name}: $text"))
+    case Some(room) => (this, sendToRoom(room, "/chat" + s"${player.name}: $text"))
     case None       => (this, Seq(SendToUser(player, text)))
   }
 
@@ -98,8 +105,8 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
         val move: PawnMove    = PawnMove.fromString(moveFrom, moveTo)
 
         ValidateMove.apply().apply(move, state) match {
-          case Right(newGameState)        => (this, sendToRoom(room, "/move " + newGameState.asJson.toString)) //todo: to return http response
-          case Left(validationError)  => (this, sendToRoom(room, validationError.show)) //todo: to return http response
+          case Right(newGameState)        => (this, sendToRoom(room, "/move " + newGameState.asJson.toString))
+          case Left(validationError)  => (this, Seq(SendToUser(player, "/error" + validationError.show)))
         }
 
       case None => (this, Seq(SendToUser(player, "you are not in room")))

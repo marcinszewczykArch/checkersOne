@@ -75,8 +75,6 @@ v
 F.idea/libraries/sbt__org_http4s_http4s_blaze_core_2_13_0_21_22_jar.xml,5\9\599663323c8597b1ac102674453b8d49cb39732b
 Y
 )src/main/scala/checkers/domain/Pawn.scala,9\4\9459284debd99d77bef3916b69d5359c8eebc3d0
-Z
-*src/main/scala/checkers/domain/Board.scala,b\8\b861dce4141e27ba3b53d2f7b1a81e9e98631642
 b
 2src/main/scala/multiplayer/rooms/domain/Room.scala,c\9\c96ff7eb6da34e672288288a4faa478aba405e05
 S

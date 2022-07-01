@@ -20,6 +20,7 @@ object ValidateMove {
     override def apply(move: PawnMove, gameState: GameState): ErrorOr[GameState] = for {
       pawn      <- gameState.board.pawnAt(move.from).toRight(NoPawnAtStartingPosition)
       _         <- startAndDestinationCoordinatesDiffer(move)
+      _         <- destinationPositionIsAvailable(gameState, move)
       _         <- pawnColourIsCorrect(pawn, gameState, move)
       _         <- pawnIsCorrectIfMultipleSmashingContinues(gameState, move)
       moveType  <- validateMoveType(gameState, move)
@@ -31,6 +32,13 @@ object ValidateMove {
         test = move.from != move.to,
         right = move,
         left = IdenticalStartAndDestinationPosition
+      )
+
+    def destinationPositionIsAvailable(gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =
+      Either.cond(
+        test = gameState.board.positionIsAvailable(move.to) == true,
+        right = move,
+        left = DestinationNotAvailable
       )
 
     def pawnColourIsCorrect(pawn: Pawn, gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =

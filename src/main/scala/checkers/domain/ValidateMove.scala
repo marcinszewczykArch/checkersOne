@@ -29,36 +29,36 @@ object ValidateMove {
 
     def startAndDestinationCoordinatesDiffer(move: PawnMove): ErrorOr[PawnMove] =
       Either.cond(
-        test = move.from != move.to,
+        test  = move.from != move.to,
         right = move,
-        left = IdenticalStartAndDestinationPosition
+        left  = IdenticalStartAndDestinationPosition
       )
 
     def destinationPositionIsAvailable(gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =
       Either.cond(
-        test = gameState.board.positionIsAvailable(move.to) == true,
+        test  = gameState.board.positionIsAvailable(move.to) == true,
         right = move,
-        left = DestinationNotAvailable
+        left  = DestinationNotAvailable
       )
 
     def pawnColourIsCorrect(pawn: Pawn, gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =
       Either.cond(
-        test = pawn.side == gameState.movesNow,
+        test  = pawn.side == gameState.movesNow,
         right = move,
-        left = WrongPawnColor
+        left  = WrongPawnColor
       )
 
     def pawnIsCorrectIfMultipleSmashingContinues(gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =
       Either.cond(
-        test = gameState.nextMoveBy.isEmpty || gameState.nextMoveBy == gameState.board.pawnAt(move.from),
+        test  = gameState.nextMoveBy.isEmpty || gameState.nextMoveBy == gameState.board.pawnAt(move.from),
         right = move,
-        left = ContinueMultipleSmashing
+        left  = ContinueMultipleSmashing
       )
 
     def validateMoveType(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
       val otherSide = gameState.movesNow.opposite
       val thisSide  = gameState.movesNow
-      val board  = gameState.board
+      val board     = gameState.board
 
       if      (move.to == move.from.upLeft()    && thisSide == White)
         Right(Single)

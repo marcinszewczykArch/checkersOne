@@ -1,6 +1,4 @@
-package multiplayer
-
-import multiplayer.players.domain.Player
+package multiplayer.domain
 
 sealed trait InputMessage {
   val player: Player
@@ -19,7 +17,7 @@ case class MakeMove(player: Player, board: String, colour: String,
 
 
 object InputMessage {
-
+//todo: do it with startWith like in angular
   def parse(player: Player, inputText: String): InputMessage = {
     val text = inputText.replaceAll("\"", "") //todo: solve this issue in Angular, this is only on the frontend
     splitWords(text) match {

@@ -1,4 +1,3 @@
-package multiplayer.players.domain
-
+package multiplayer.domain
 
 final case class Player(name: String)

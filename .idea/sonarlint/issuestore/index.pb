@@ -1,8 +1,6 @@
 
 f
 6src/main/scala/multiplayer/players/domain/Player.scala,2\d\2db6fee144b87c76855f80a62a2f37d139dc2532
-b
-2src/main/scala/multiplayer/domain/UuidString.scala,0\e\0ecf1def39146356d61c869a4700335c41e03de5
 g
 7.idea/libraries/sbt__org_log4s_log4s_2_13_1_9_0_jar.xml,c\0\c0b0dcee036a66512757c674984873c15be30709
 l
@@ -73,8 +71,6 @@ x
 H.idea/libraries/sbt__org_http4s_http4s_blaze_server_2_13_0_21_22_jar.xml,b\9\b9d6957714af68809885293462c815630655e082
 v
 F.idea/libraries/sbt__org_http4s_http4s_blaze_core_2_13_0_21_22_jar.xml,5\9\599663323c8597b1ac102674453b8d49cb39732b
-Y
-)src/main/scala/checkers/domain/Pawn.scala,9\4\9459284debd99d77bef3916b69d5359c8eebc3d0
 b
 2src/main/scala/multiplayer/rooms/domain/Room.scala,c\9\c96ff7eb6da34e672288288a4faa478aba405e05
 S

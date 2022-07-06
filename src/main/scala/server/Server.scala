@@ -4,13 +4,11 @@ import cats.effect.concurrent.Ref
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
 import checkers.CheckersCodecs.gameStateEncoder
-import checkers.CheckersRoutes.makeAiMove
 import checkers.domain.{GameState, PawnMove, ValidateMove}
 import fs2.concurrent.{Queue, Topic}
 import fs2.{Pipe, Stream}
 import io.circe.syntax.EncoderOps
-import multiplayer._
-import multiplayer.players.domain.Player
+import multiplayer.domain._
 import org.http4s.circe._
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
 import org.http4s.dsl.io._
@@ -21,6 +19,7 @@ import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.{Close, Text}
 import org.http4s.{HttpApp, HttpRoutes}
+import singleplayer.AiEasy.makeAiMove
 //import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext
 
@@ -59,8 +58,8 @@ object Server extends IOApp {
       val state: GameState = GameState.fromString(board, currentColour)
       Thread.sleep(2000)
       makeAiMove(state)
-
   }
+
 
   def multiplayerRoutes(state: Ref[IO, MultiplayerState], queue: Queue[IO, InputMessage], topic: Topic[IO, OutputMessage]): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
@@ -101,8 +100,8 @@ object Server extends IOApp {
 
     for (
       queue <- Queue.unbounded[IO, InputMessage];
-      topic <- Topic[IO, OutputMessage](SendToUsers(List.empty, ""));
-      ref <- Ref.of[IO, MultiplayerState](MultiplayerState());
+      topic <- Topic[IO, OutputMessage](SendToUsers(List.empty, WebsocketRoutes.None, ""));
+      ref   <- Ref.of[IO, MultiplayerState](MultiplayerState());
 
       exitCode <- {
         val httpStream = BlazeServerBuilder[IO](ExecutionContext.global)

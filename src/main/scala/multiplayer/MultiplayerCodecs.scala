@@ -2,8 +2,7 @@ package multiplayer
 
 import io.circe.generic.semiauto
 import io.circe.{Encoder, Json}
-import multiplayer.players.domain.Player
-import multiplayer.rooms.domain.Room
+import multiplayer.domain.{MultiplayerState, Player, Room}
 
 object MultiplayerCodecs {
 

@@ -1,13 +1,10 @@
-package multiplayer
+package multiplayer.domain
 
 import cats.implicits._
 import checkers.CheckersCodecs.gameStateEncoder
 import checkers.domain.{GameState, PawnMove, ValidateMove}
 import io.circe.syntax.EncoderOps
 import multiplayer.MultiplayerCodecs.multiplayerStateEncoder
-import multiplayer.players.domain.Player
-import multiplayer.rooms.domain.Room
-
 
 
 object MultiplayerState {
@@ -16,11 +13,6 @@ object MultiplayerState {
 }
 
 case class MultiplayerState(players: List[Player], rooms: List[Room]) {
-  //todo: move to enum
-  val STATE: String = "/state"
-  val MOVE: String  = "/move"
-  val CHAT: String  = "/chat"
-  val ERROR: String = "/error"
 
   def process(msg: InputMessage): (MultiplayerState, Seq[OutputMessage]) = msg match {
 
@@ -34,9 +26,6 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
     case Error(player)                      => sendErrorMsg(player)
   }
 
-
-
-
   private def enterGame(player: Player): (MultiplayerState, Seq[OutputMessage]) = {
     val newState = MultiplayerState(players :+ player, this.rooms)
     (newState, sendStateToAll(newState))
@@ -49,7 +38,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       case Some(room) =>
         val newRooms: List[Room] = excludePlayerFromRoom(player, room)
         val newState: MultiplayerState = MultiplayerState(newPlayers, newRooms) //replace room in state
-        val message: Seq[OutputMessage] = sendToRoom(room, "/chat" + s"${player.name} has left game").concat(sendStateToAll(newState))
+        val message: Seq[OutputMessage] = sendToRoom(room, WebsocketRoutes.Chat,s"${player.name} has left game").concat(sendStateToAll(newState))
         (newState, message)
 
       case None =>
@@ -60,21 +49,21 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
 
   private def enterRoom(player: Player, roomName: String): (MultiplayerState, Seq[OutputMessage]) = findRoomByPlayer(player) match {
     case Some(_) =>
-      (this, Seq(SendToUser(player, "/error" + "You are already in the room. Leave current room first")))
+      (this, Seq(SendToUser(player, WebsocketRoutes.Error, "You are already in the room. Leave current room first")))
 
     case None    =>
       val room: Room = findRoomByName(roomName).getOrElse(Room(roomName, List())) //take from rooms or create new room
       val nextMembers: List[Player] = room.players :+ player
 
       if (nextMembers.size > 2) {
-        (this, Seq(SendToUser(player, "/error" + "This room is full, try to find another one")))
+        (this, Seq(SendToUser(player, WebsocketRoutes.Error, "This room is full, try to find another one")))
 
       } else {
         val newRoom = Room(room.name, nextMembers)
         val newRooms = rooms.filterNot(_ == room) :+ newRoom
         val newState = MultiplayerState(players, newRooms)
 
-        val message: Seq[OutputMessage] = sendToRoom(newRoom, "/chat" + s"${player.name} has joined room").concat(sendStateToAll(newState))
+        val message: Seq[OutputMessage] = sendToRoom(newRoom, WebsocketRoutes.Chat,s"${player.name} has joined room").concat(sendStateToAll(newState))
         (newState, message)
       }
   }
@@ -84,7 +73,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       val newRooms: List[Room] = excludePlayerFromRoom(player, room)
       val newState: MultiplayerState = MultiplayerState(players, newRooms) //replace room in state //replace room in state
 
-      val message: Seq[OutputMessage] = sendToRoom(room, "/chat" + s"${player.name} has left room").concat(sendStateToAll(newState))
+      val message: Seq[OutputMessage] = sendToRoom(room, WebsocketRoutes.Chat, s"${player.name} has left room").concat(sendStateToAll(newState))
       (newState, message)
 
     case None =>
@@ -92,11 +81,11 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
   }
 
   private def sendChatMsg(player: Player, text: String) = findRoomByPlayer(player) match {
-    case Some(room) => (this, sendToRoom(room, "/chat" + s"${player.name}: $text"))
-    case None       => (this, Seq(SendToUser(player, text)))
+    case Some(room) => (this, sendToRoom(room, WebsocketRoutes.Chat, s"${player.name}: $text"))
+    case None       => (this, Seq(SendToUser(player, WebsocketRoutes.None, text)))
   }
 
-  private def sendErrorMsg(player: Player) = (this, Seq(SendToUser(player, "incorrect ws input")))
+  private def sendErrorMsg(player: Player) = (this, Seq(SendToUser(player, WebsocketRoutes.None, "incorrect ws input")))
 
   private def makeMove(player: Player, board: String, currentColour: String, moveFrom: String, moveTo: String): (MultiplayerState, Seq[OutputMessage]) = {
     findRoomByPlayer(player) match {
@@ -105,24 +94,22 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
         val move: PawnMove    = PawnMove.fromString(moveFrom, moveTo)
 
         ValidateMove.apply().apply(move, state) match {
-          case Right(newGameState)        => (this, sendToRoom(room, "/move " + newGameState.asJson.toString))
-          case Left(validationError)  => (this, Seq(SendToUser(player, "/error" + validationError.show)))
+          case Right(newGameState)        => (this, sendToRoom(room, WebsocketRoutes.Move, newGameState.asJson.toString))
+          case Left(validationError)  => (this, Seq(SendToUser(player, WebsocketRoutes.Error, validationError.show)))
         }
 
-      case None => (this, Seq(SendToUser(player, "you are not in room")))
+      case None => (this, Seq(SendToUser(player, WebsocketRoutes.None, "you are not in room")))
     }
   }
 
 
-
-
   //helpers
-  private def sendToRoom(room: Room, text: String): Seq[OutputMessage] = {
-    Seq(SendToUsers(room.players, text))
+  private def sendToRoom(room: Room, prefix: WebsocketRoutes, text: String): Seq[OutputMessage] = {
+    Seq(SendToUsers(room.players, prefix, text))
   }
 
   private def sendStateToAll(state: MultiplayerState): Seq[OutputMessage] = {
-    Seq(SendToUsers(state.players, "/state" + state.asJson.toString()))
+    Seq(SendToUsers(state.players, WebsocketRoutes.State, state.asJson.toString()))
   }
 
   private def findRoomByPlayer(player: Player): Option[Room] = rooms.find(_.players.contains(player))

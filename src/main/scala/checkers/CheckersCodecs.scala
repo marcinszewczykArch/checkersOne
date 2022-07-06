@@ -1,9 +1,9 @@
 package checkers
 
 import checkers.domain._
-import io.circe.{Decoder, Encoder, Json}
-import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax.EncoderOps
+import io.circe.{Encoder, Json}
 
 
 object CheckersCodecs {
@@ -40,8 +40,5 @@ object CheckersCodecs {
   implicit val boardStatusEncoder: Encoder[Board] = Encoder.instance {
     board => Json.fromString(board.toString)
   }
-
-
-
 
 }

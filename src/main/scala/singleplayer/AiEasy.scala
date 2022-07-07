@@ -14,8 +14,8 @@ object AiEasy {
   @tailrec
   def makeAiMove(state: GameState): IO[Response[IO]] = {
     import scala.util.Random
-    val moveFrom = Random.between(0, 31).toString
-    val moveTo = Random.between(0, 31).toString
+    val moveFrom = Random.between(0, 32).toString
+    val moveTo   = Random.between(0, 32).toString
 
     val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
 

@@ -15,7 +15,22 @@ final case class GameState(
 
     val oldPawn: Option[Pawn] = board.pawnAt(move.from)
 
-    val newPawn: Option[Pawn] = oldPawn.map(o => Pawn(o.side, o.pawnType, move.to))
+    val newPawn: Option[Pawn] = oldPawn match {
+      case None       => None
+      case Some(pawn) =>
+        val newSide     = pawn.side
+        val newPosition = move.to
+        val newType     = pawn.pawnType match {
+            case PawnType.Queen   => PawnType.Queen
+            case PawnType.Regular => (move.from.y, move.to.y) match {
+              case (_, 0) => PawnType.Queen
+              case (_, 7) => PawnType.Queen
+              case _      => PawnType.Regular
+            }
+        }
+
+      Some(Pawn(newSide, newType, newPosition))
+    }
 
     val smashedPawn: Option[Pawn] = getSmashedPawn(move)
 
@@ -25,6 +40,8 @@ final case class GameState(
         .filterNot(_ == oldPawn.orNull)
         .filterNot(_ == smashedPawn.orNull)
         .appended(newPawn.orNull))
+
+
 
     val newRound: Side = checkNewRound(move)
 
@@ -115,14 +132,14 @@ object GameState {
       .split("")
       .zipWithIndex
       .filter(o => o._1 != EMPTY_POSITION)
-      .map(o => (Side.fromString(o._1), PawnPosition.fromIndex(o._2)))
-      .map(o => Pawn(o._1, PawnType.Regular, o._2))
-    //todo: this is always for regular pawn, not for queen - needs to be changed!!!
-
+      .map(o => (Side.fromString(o._1), PawnType.fromString(o._1), PawnPosition.fromIndex(o._2)))
+      .map(o => Pawn(o._1, o._2, o._3))
 
     val round: Side = roundString match {
       case "r" => Red
-      case "w" =>  White
+      case "R" => Red
+      case "w" => White
+      case "W" => White
     }
 
     GameState(

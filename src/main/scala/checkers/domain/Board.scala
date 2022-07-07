@@ -16,11 +16,16 @@ final case class Board (pawnsArray: Array[Pawn]) {
   def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty && position.isOnTheBoard
 
   override def toString: String = {
-    val boardArray: Array[(Int, Side)] = this.pawnsArray.map(o => (toIndex(o.position), o.side))
+    val boardArray: Array[(Int, PawnType, Side)] = this.pawnsArray.map(o => (toIndex(o.position), o.pawnType, o.side))
     availablePositions.indices.map(n =>
       boardArray
         .find(_._1 == n)
-        .map(_._2.tag)
+        .map{o: (Int, PawnType, Side) =>
+          if(o._2 == PawnType.Regular)
+            o._3.tag
+          else
+            o._3.tag.toUpperCase()
+        }
         .getOrElse(EMPTY_POSITION)).mkString("")
   }
 

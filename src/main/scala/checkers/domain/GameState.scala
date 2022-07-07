@@ -20,9 +20,10 @@ final case class GameState(
       case Some(pawn) =>
         val newSide     = pawn.side
         val newPosition = move.to
+        //todo: if there is another pawn to smash pawnType can not become a queen! Here we should assume the pawnType remains unchanged.
         val newType     = pawn.pawnType match {
             case PawnType.Queen   => PawnType.Queen
-            case PawnType.Regular => (move.from.y, move.to.y) match {
+            case PawnType.Regular => (move.from.x, move.to.x) match {
               case (_, 0) => PawnType.Queen
               case (_, 7) => PawnType.Queen
               case _      => PawnType.Regular
@@ -57,9 +58,10 @@ final case class GameState(
     }
 
     val newNextMoveBy: Option[Pawn] = {
-      if (newRound == movesNow)
+      if (newRound == movesNow) {
         newBoard.pawnAt(move.to)
-      else
+      } else
+      //todo: here check if newPawn should change to queen
         None
     }
 

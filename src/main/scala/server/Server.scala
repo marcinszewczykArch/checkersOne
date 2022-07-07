@@ -37,6 +37,7 @@ object Server extends IOApp {
 
   val checkersRoute = HttpRoutes.of[IO] {
 
+    //todo: GET with parameters if GameState is not saved on the server side
     case GET -> Root / "checkers" :?
       boardQueryParamMatcher(board) +&
         currentColourQueryParamMatcher(currentColour) +&
@@ -51,12 +52,23 @@ object Server extends IOApp {
         case Left(validationError) => NotAcceptable(validationError.show)
       }
 
+    //todo: POST with body if GameState is saved on the server side (request is changing the state)
+//    case req@POST -> Root / "checkers" =>
+//      val move = req.as[PawnMove]
+//      val state: GameState = GameState.fromString(board, currentColour)
+//      val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
+//
+//      ValidateMove.apply().apply(move, state) match {
+//        case Right(newState) => Ok(newState.asJson)
+//        case Left(validationError) => NotAcceptable(validationError.show)
+//      }
+
     case GET -> Root / "checkersAi" :?
       boardQueryParamMatcher(board) +&
         currentColourQueryParamMatcher(currentColour) =>
 
       val state: GameState = GameState.fromString(board, currentColour)
-      Thread.sleep(2000)
+      Thread.sleep(500)
       makeAiMove(state)
   }
 

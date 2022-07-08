@@ -22,6 +22,8 @@ object MoveValidationError extends Enum[MoveValidationError] {
 
   case object IllegalMove extends MoveValidationError
 
+  case object MoveIsNotDiagonal extends MoveValidationError
+
 
   implicit val showMoveValidationError: Show[MoveValidationError] = {
     case WrongPawnColor                         => "Wrong piece color"
@@ -30,6 +32,7 @@ object MoveValidationError extends Enum[MoveValidationError] {
     case IdenticalStartAndDestinationPosition   => "Move's start and destination can not be identical"
     case OpponentPawnToTake                     => "You have to take your opponent's pawn"
     case ContinueMultipleSmashing               => "You have to continue your multiple smashing with the same pawn"
+    case MoveIsNotDiagonal                      => "Move is not diagonal"
     case IllegalMove                            => "Illegal move"
   }
 }

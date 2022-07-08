@@ -92,43 +92,35 @@ object ValidateMove {
         Left(MoveValidationError.IllegalMove)
     }
 
-    //todo: implement validation for queen
     def validateMoveTypeQueen (gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
       val otherSide = gameState.movesNow.opposite
-      val thisSide = gameState.movesNow
       val board = gameState.board
 
       //check if move is diagonal
       if ((move.to.x - move.from.x).abs != (move.to.y - move.from.y).abs)
-        Left(MoveValidationError.MoveIsNotDiagonal)
-      else
-        ???
+        return Left(MoveValidationError.MoveIsNotDiagonal)
+
 
       val deltaX = move.to.x - move.from.x
       val deltaY = move.to.y - move.from.y
 
       val pawnsOnTheWay: List[Pawn] = for {
-        x <- List.range(1, deltaX)
-        y <- List.range(1, deltaY)
-        if x.abs == y.abs
-        pawnPosition = PawnPosition(move.from.x + x, move.from.y + y)
+        dx <- if (deltaX > 0) List.range(1, deltaX) else List.range(deltaX, 0)
+        dy <- if (deltaY > 0) List.range(1, deltaY) else List.range(deltaY, 0)
+        if dx.abs == dy.abs
+        pawnPosition = PawnPosition(move.from.x + dx, move.from.y + dy)
         pawn = board.pawnAt(pawnPosition)
         if pawn.isDefined
       } yield pawn.get
 
-//      (1 to moveLength)
-//        .map(o => PawnPosition(move.from.x + o, move.from.y + o))
-//        .filter(board.pawnAt(_).isDefined)
-
-
-      //check if there is
-      // 1) 0 other pawns on the way => Right(Single)
-      // 2) exactly 1 pawn of opponent on the way => Right(WithSmash)
-      // 3) other option => Left
+      pawnsOnTheWay.size match {
+        case 0                                         => Right(Single)
+        case 1 if pawnsOnTheWay.head.side == otherSide => Right(WithSmash)
+        case 1                                         => Left(MoveValidationError.SmashingOwnPawnIsNotOk)
+        case _                                         => Left(MoveValidationError.TooManyPawnsOnTheWay)
+      }
 
     }
-
-
 
     def getNewState(gameState: GameState, moveType: PawnMoveType, move: PawnMove): ErrorOr[GameState] = {
       val sthToSmash: Boolean = gameState.isSthToSmash

@@ -51,7 +51,7 @@ final case class GameState(
         GameStatus.Win(Red)
       else if (!newBoard.pawnsArray.exists(_.side == Red))
         GameStatus.Win(White)
-//    else if (15 moves with queen without smashing) todo: add
+//    else if (15 moves with queen without smashing) todo: add this condition
 //      GameStatus.Draw
       else
         GameStatus.Ongoing
@@ -71,31 +71,53 @@ final case class GameState(
   def isNextToSmash(move: PawnMove): Boolean = {
     val otherColour: Side = movesNow.opposite
 
-    if (getSmashedPawn(move).isEmpty)
-      false
-    else if (board.pawnExists(move.to.upRight(),   otherColour) && board.positionIsAvailable(move.to.doubleUpRight()))
-      true
-    else if (board.pawnExists(move.to.upLeft(),    otherColour) && board.positionIsAvailable(move.to.doubleUpLeft()))
-      true
-    else if (board.pawnExists(move.to.downRight(), otherColour) && board.positionIsAvailable(move.to.doubleDownRight()))
-      true
-    else if (board.pawnExists(move.to.downLeft(),  otherColour) && board.positionIsAvailable(move.to.doubleDownLeft()))
-      true
-    else
-      false
+    val checkForRegular = {
+      if (getSmashedPawn(move).isEmpty)
+        false
+      else if (board.pawnExists(move.to.upRight(),   otherColour) && board.positionIsAvailable(move.to.doubleUpRight()))
+        true
+      else if (board.pawnExists(move.to.upLeft(),    otherColour) && board.positionIsAvailable(move.to.doubleUpLeft()))
+        true
+      else if (board.pawnExists(move.to.downRight(), otherColour) && board.positionIsAvailable(move.to.doubleDownRight()))
+        true
+      else if (board.pawnExists(move.to.downLeft(),  otherColour) && board.positionIsAvailable(move.to.doubleDownLeft()))
+        true
+      else
+        false
+    }
+
+    //todo: check for queen
+    val checkForQueen = ???
+
+
+    checkForRegular || checkForQueen
   }
 
   def getSmashedPawn(move: PawnMove): Option[Pawn] = {
-    if (move.to == move.from.doubleUpRight())
-      board.pawnAt(move.from.upRight())
-    else if (move.to == move.from.doubleDownRight())
-    board.pawnAt(move.from.downRight())
-    else if  (move.to == move.from.doubleUpLeft())
-      board.pawnAt(move.from.upLeft())
-    else if  (move.to == move.from.doubleDownLeft())
-      board.pawnAt(move.from.downLeft())
-    else
-      None
+
+    val getForRegular: Option[Pawn] = {
+      if (move.to == move.from.doubleUpRight())
+        board.pawnAt(move.from.upRight())
+      else if (move.to == move.from.doubleDownRight())
+        board.pawnAt(move.from.downRight())
+      else if (move.to == move.from.doubleUpLeft())
+        board.pawnAt(move.from.upLeft())
+      else if (move.to == move.from.doubleDownLeft())
+        board.pawnAt(move.from.downLeft())
+      else
+        None
+    }
+
+    //todo: get for queen
+    val getForQueen: Option[Pawn] = ???
+
+    //sum
+    (getForRegular.isDefined, getForQueen.isDefined) match {
+      case (true, _) => getForRegular
+      case (_, true) => getForQueen
+      case _         => None
+    }
+
   }
 
   def checkNewRound(move: PawnMove): Side = {
@@ -109,13 +131,27 @@ final case class GameState(
     val colour: Side = this.movesNow
     val board: Board = this.board
 
-    board.pawnsArray.filter(_.side == colour).exists(o => board.pawnsArray.exists(p =>
-      p.side != colour && (
-          (p.position == o.position.upRight()   && this.board.positionIsAvailable(p.position.upRight()))   ||
-          (p.position == o.position.upLeft()    && this.board.positionIsAvailable(p.position.upLeft()))    ||
-          (p.position == o.position.downRight() && this.board.positionIsAvailable(p.position.downRight())) ||
-          (p.position == o.position.downLeft()  && this.board.positionIsAvailable(p.position.downLeft())))
+    //check for regular pawns
+    val checkForRegular =
+      board.pawnsArray
+        .filter(_.side == colour)
+        .filter(_.pawnType == PawnType.Regular)
+        .exists(o => board.pawnsArray.exists(p =>
+          p.side != colour && (
+            (p.position == o.position.upRight()   && this.board.positionIsAvailable(p.position.upRight()))   ||
+            (p.position == o.position.upLeft()    && this.board.positionIsAvailable(p.position.upLeft()))    ||
+            (p.position == o.position.downRight() && this.board.positionIsAvailable(p.position.downRight())) ||
+            (p.position == o.position.downLeft()  && this.board.positionIsAvailable(p.position.downLeft())))
     ))
+
+    //todo: check for queen
+    val checkForQueen = ???
+      board.pawnsArray
+        .filter(_.side == colour)
+        .filter(_.pawnType == PawnType.Queen)
+
+
+    checkForRegular || checkForQueen
   }
 }
 

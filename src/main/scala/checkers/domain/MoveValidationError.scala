@@ -9,20 +9,15 @@ object MoveValidationError extends Enum[MoveValidationError] {
   val values: IndexedSeq[MoveValidationError] = findValues
 
   case object WrongPawnColor extends MoveValidationError
-
   case object DestinationNotAvailable extends MoveValidationError
-
   case object NoPawnAtStartingPosition extends MoveValidationError
-
   case object IdenticalStartAndDestinationPosition extends MoveValidationError
-
   case object OpponentPawnToTake extends MoveValidationError
-
   case object ContinueMultipleSmashing extends MoveValidationError
-
   case object IllegalMove extends MoveValidationError
-
   case object MoveIsNotDiagonal extends MoveValidationError
+  case object TooManyPawnsOnTheWay extends MoveValidationError
+  case object SmashingOwnPawnIsNotOk extends MoveValidationError
 
 
   implicit val showMoveValidationError: Show[MoveValidationError] = {
@@ -33,6 +28,8 @@ object MoveValidationError extends Enum[MoveValidationError] {
     case OpponentPawnToTake                     => "You have to take your opponent's pawn"
     case ContinueMultipleSmashing               => "You have to continue your multiple smashing with the same pawn"
     case MoveIsNotDiagonal                      => "Move is not diagonal"
+    case SmashingOwnPawnIsNotOk                 => "Smashing own pawn is not ok"
+    case TooManyPawnsOnTheWay                   => "Too many pawns on the way"
     case IllegalMove                            => "Illegal move"
   }
 }

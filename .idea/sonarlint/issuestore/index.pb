@@ -71,14 +71,10 @@ v
 F.idea/libraries/sbt__org_http4s_http4s_blaze_core_2_13_0_21_22_jar.xml,5\9\599663323c8597b1ac102674453b8d49cb39732b
 b
 2src/main/scala/repository/DataBaseConnection.scala,2\9\29a4313a27dca04a9f9cbf9b7d17c9f3c1276cd6
-h
-8src/main/scala/checkers/domain/MoveValidationError.scala,d\b\dbc9c105613fb97a8404ce3f9abf346d02d1f454
 ]
 -src/main/scala/checkers/domain/PawnType.scala,3\1\31b862c67aa0f8995dc2531b98f3e8a84a72cd30
 a
 1src/main/scala/checkers/domain/PawnPosition.scala,d\4\d41517af765192093bdbbdeda286860d8d15c5a1
-a
-1src/main/scala/checkers/domain/PawnMoveType.scala,c\4\c45f063e3b7787ade61857de110b87e310869ec8
 ]
 -src/main/scala/checkers/domain/PawnMove.scala,7\b\7bc5aca8791a8b532b4269e7708beb86b7c1eb5d
 Y

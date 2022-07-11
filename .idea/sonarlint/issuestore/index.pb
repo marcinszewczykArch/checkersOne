@@ -91,3 +91,7 @@ e
 ,src/main/scala/multiplayer/domain/Room.scala,b\4\b4b8cde3a8ec5cc0ca3b7451645c5c0935c9fc7a
 g
 7src/main/scala/multiplayer/domain/WebsocketRoutes.scala,2\1\21c2c9a8f43b6208743718682cfcb62c7eb31abf
+\
+,src/main/scala/checkers/CheckersCodecs.scala,c\8\c80600aef1ffcf9722b8e8ff84004c8d6e871193
+Y
+)src/main/scala/checkers/domain/Side.scala,9\a\9a7ce516a1804636898b71b496f0a20658b4335a

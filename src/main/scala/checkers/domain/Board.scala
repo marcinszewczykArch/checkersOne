@@ -15,7 +15,7 @@ final case class Board (pawnsArray: Array[Pawn]) {
 
   def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty && position.isOnTheBoard
 
-  def promoteForQueen() = {
+  def promoteForQueen(): Board = {
     val pawnToPromote: Option[Pawn] = this.pawnsArray
       .filter(_.pawnType == Regular)
       .find(o => o.position.x == 0 && o.side == White || o.position.x == 7 && o.side == Red)

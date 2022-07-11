@@ -16,6 +16,7 @@ object MoveValidationError extends Enum[MoveValidationError] {
   case object ContinueMultipleSmashing extends MoveValidationError
   case object IllegalMove extends MoveValidationError
   case object MoveIsNotDiagonal extends MoveValidationError
+  case object MoveTypeIsIncorrect extends MoveValidationError
   case object TooManyPawnsOnTheWay extends MoveValidationError
   case object SmashingOwnPawnIsNotOk extends MoveValidationError
 
@@ -30,6 +31,7 @@ object MoveValidationError extends Enum[MoveValidationError] {
     case MoveIsNotDiagonal                      => "Move is not diagonal"
     case SmashingOwnPawnIsNotOk                 => "Smashing own pawn is not ok"
     case TooManyPawnsOnTheWay                   => "Too many pawns on the way"
+    case MoveTypeIsIncorrect                    => "You have to take your opponent's pawn"
     case IllegalMove                            => "Illegal move"
   }
 }

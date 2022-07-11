@@ -25,7 +25,8 @@ object ValidateMove {
       _         <- pawnColourIsCorrect(pawn, gameState, move)
       _         <- pawnIsCorrectIfMultipleSmashingContinues(gameState, move)
       _         <- moveIsDiagonal(move)
-      moveType  <- validateMoveType(gameState, move)
+      moveType  <- getMoveType(gameState, move)
+      _         <- moveTypeIsCorrect(moveType, isSthToSmash(gameState))
       gameState <- getNewState(gameState, move, moveType)
     } yield gameState
 
@@ -57,20 +58,28 @@ object ValidateMove {
         left  = ContinueMultipleSmashing
       )
 
-    def moveIsDiagonal (move: PawnMove): ErrorOr[PawnMove] = {
+    def moveIsDiagonal(move: PawnMove): ErrorOr[PawnMove] = {
       Either.cond(
-        test  = (move.to.x - move.from.x).abs != (move.to.y - move.from.y).abs,
+        test  = (move.to.x - move.from.x).abs == (move.to.y - move.from.y).abs,
         right = move,
         left  = MoveIsNotDiagonal
       )
     }
 
-    def validateMoveType (gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
+    def moveTypeIsCorrect(moveType: PawnMoveType, isWithSmash: Boolean): ErrorOr[PawnMoveType] = {
+      Either.cond(
+        test  = (isWithSmash && moveType == PawnMoveType.WithSmash) || (!isWithSmash && moveType == PawnMoveType.Single),
+        right = moveType,
+        left  = MoveTypeIsIncorrect
+      )
+    }
+
+    def getMoveType (gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
       val pawnType = gameState.board.pawnAt(move.from).map(_.pawnType)
 
       pawnType match {
-        case Some(PawnType.Regular) => validateMoveTypeRegular(gameState: GameState, move: PawnMove)
-        case Some(PawnType.Queen)   => validateMoveTypeQueen(gameState: GameState, move: PawnMove)
+        case Some(PawnType.Regular) => getMoveTypeRegular (gameState: GameState, move: PawnMove)
+        case Some(PawnType.Queen)   => getMoveTypeQueen   (gameState: GameState, move: PawnMove)
         case _                      => Left(MoveValidationError.IllegalMove)
       }
     }
@@ -109,7 +118,7 @@ object ValidateMove {
 
 
 
-    private def validateMoveTypeRegular (gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
+    private def getMoveTypeRegular (gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
       val otherSide = gameState.movesNow.opposite
       val thisSide = gameState.movesNow
       val board = gameState.board
@@ -136,7 +145,7 @@ object ValidateMove {
         Left(MoveValidationError.IllegalMove)
     }
 
-    private def validateMoveTypeQueen (gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
+    private def getMoveTypeQueen (gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
       val otherSide = gameState.movesNow.opposite
 
       val deltaX = move.to.x - move.from.x
@@ -192,7 +201,7 @@ object ValidateMove {
           delta    = (deltaX, deltaY) if deltaX.abs == deltaY.abs
           moveFrom = queen.position
           moveTo   = PawnPosition(moveFrom.x + delta._1, moveFrom.y + delta._2) if moveTo.isOnTheBoard && board.positionIsAvailable(moveTo)
-          move     = PawnMove(moveFrom, moveTo) if validateMoveTypeQueen(gameState, move) == Right(WithSmash)
+          move     = PawnMove(moveFrom, moveTo) if getMoveTypeQueen(gameState, move) == Right(WithSmash)
           } yield move
       }.length > 0
 

@@ -15,8 +15,6 @@ k
 ;.idea/libraries/sbt__org_http4s_jawn_fs2_2_13_1_0_0_jar.xml,8\1\81f06bf13328287a1f2b3723dc000f6675321a83
 r
 B.idea/libraries/sbt__org_http4s_http4s_server_2_13_0_21_22_jar.xml,e\0\e0ea5c31778fe302c896a1027dd48480cffd37f6
-M
-.idea/modules/checkersOne.iml,9\b\9b68a77b9eea39f48d0a22cbff1de94c52733846
 n
 >.idea/libraries/sbt__org_specs2_specs2_core_2_13_4_8_0_jar.xml,3\2\3214d0eebe601ed9e4cc652d989a0ed65cb48f5f
 m
@@ -33,8 +31,6 @@ l
 <.idea/libraries/sbt__org_specs2_specs2_fp_2_13_4_8_0_jar.xml,e\9\e9f610d20390302cd5fef49693cd0260562377f7
 q
 A.idea/libraries/sbt__org_typelevel_cats_effect_2_13_2_4_1_jar.xml,2\2\22ff15ec0d46984d00c3b614734c4ef294c33148
-=
-.bsp/sbt.json,2\d\2d1c848107550a7cf7f00ddb405f3bba740cc5b5
 q
 A.idea/libraries/sbt__ch_qos_logback_logback_classic_1_2_3_jar.xml,e\5\e50626d1ca999caf6e36f3be377c9302d2105a7d
 o
@@ -73,12 +69,6 @@ b
 2src/main/scala/repository/DataBaseConnection.scala,2\9\29a4313a27dca04a9f9cbf9b7d17c9f3c1276cd6
 ]
 -src/main/scala/checkers/domain/PawnType.scala,3\1\31b862c67aa0f8995dc2531b98f3e8a84a72cd30
-a
-1src/main/scala/checkers/domain/PawnPosition.scala,d\4\d41517af765192093bdbbdeda286860d8d15c5a1
-]
--src/main/scala/checkers/domain/PawnMove.scala,7\b\7bc5aca8791a8b532b4269e7708beb86b7c1eb5d
-Y
-)src/main/scala/checkers/domain/Pawn.scala,9\4\9459284debd99d77bef3916b69d5359c8eebc3d0
 d
 4src/main/scala/multiplayer/domain/InputMessage.scala,1\2\12430e235135ba4159cab289611fa47872572510
 h
@@ -93,5 +83,3 @@ g
 7src/main/scala/multiplayer/domain/WebsocketRoutes.scala,2\1\21c2c9a8f43b6208743718682cfcb62c7eb31abf
 \
 ,src/main/scala/checkers/CheckersCodecs.scala,c\8\c80600aef1ffcf9722b8e8ff84004c8d6e871193
-Y
-)src/main/scala/checkers/domain/Side.scala,9\a\9a7ce516a1804636898b71b496f0a20658b4335a

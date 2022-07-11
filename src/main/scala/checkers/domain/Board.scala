@@ -15,6 +15,25 @@ final case class Board (pawnsArray: Array[Pawn]) {
 
   def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty && position.isOnTheBoard
 
+  def promoteForQueen(move: PawnMove) = {
+    val pawn: Pawn = this.pawnAt(move.to).get
+    val newType = pawn.pawnType match {
+        case PawnType.Queen   => PawnType.Queen
+        case PawnType.Regular => pawn.position.x match {
+          case 0 if pawn.side == White => PawnType.Queen
+          case 7 if pawn.side == Red   => PawnType.Queen
+          case _                       => PawnType.Regular
+        }
+    }
+
+    Board(
+      this.pawnsArray
+      .filterNot(_ == pawn)
+      .appended(Pawn(pawn.side, newType, pawn.position))
+    )
+
+  }
+
   override def toString: String = {
     val boardArray: Array[(Int, PawnType, Side)] = this.pawnsArray.map(o => (toIndex(o.position), o.pawnType, o.side))
     availablePositions.indices.map(n =>

@@ -1,8 +1,6 @@
 package checkers.domain
 
-import checkers.domain.Board.EMPTY_POSITION
-import checkers.domain.PawnType.{Queen, Regular}
-import checkers.domain.Side.{Red, White}
+import checkers.domain.Side.White
 
 final case class GameState(
     status: GameStatus = GameStatus.Ongoing,
@@ -225,25 +223,23 @@ object GameState {
       nextMoveBy = None
     )
 
-  def fromString(boardString: String, roundString: String): GameState = {
+  def fromString(board: String, movesNow: String, nextMoveBy: String = "None", status: String = "ongoing"): Option[GameState] = {
 
-    val board: Array[Pawn] = boardString
-      .split("")
-      .zipWithIndex
-      .filter(o => o._1 != EMPTY_POSITION)
-      .map(o => (Side.fromString(o._1), PawnType.fromString(o._1), PawnPosition.fromIndex(o._2)))
-      .map(o => Pawn(o._1, o._2, o._3))
+    val newMovesNow: Option[Side]         = Side.fromString(movesNow)
+    val newBoard: Option[Board]           = Board.fromString(board)
+    val newGameStatus: Option[GameStatus] = GameStatus.fromString(status)
+    val newNextMoveBy: Option[Pawn]       = for {
+      board: Board                <- Board.fromString(board)
+      index: Int                  <- nextMoveBy.toIntOption
+      pawnPosition: PawnPosition  <- PawnPosition.fromIndex(index)
+      pawn: Pawn                  <- board.pawnAt(pawnPosition)
+    } yield pawn
 
-    val round: Side = roundString match {
-      case "r" => Red
-      case "R" => Red
-      case "w" => White
-      case "W" => White
+    (newGameStatus, newMovesNow, newBoard, newNextMoveBy) match {
+      case (Some(gameStatus), Some(movesNow), Some(board), nextMoveBy) => Some(GameState(gameStatus, movesNow, board, nextMoveBy)) //todo: nextMoveBy is an Option
+      case _                                                           => None
     }
 
-    GameState(
-      movesNow = round,
-      board = Board(board)
-    ) //todo: game status and nextMoveBy are by default
   }
+
 }

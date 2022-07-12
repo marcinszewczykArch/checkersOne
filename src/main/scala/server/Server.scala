@@ -27,25 +27,26 @@ object Server extends IOApp {
 
   case class State(board: String, currentColour: String)
 
-  object boardQueryParamMatcher extends QueryParamDecoderMatcher[String]("board")
-
+  object boardQueryParamMatcher         extends QueryParamDecoderMatcher[String]("board")
   object currentColourQueryParamMatcher extends QueryParamDecoderMatcher[String]("currentColour")
-
-  object moveFromQueryParamMatcher extends QueryParamDecoderMatcher[String]("moveFrom")
-
-  object moveToQueryParamMatcher extends QueryParamDecoderMatcher[String]("moveTo")
+  object nextMoveByQueryParamMatcher    extends QueryParamDecoderMatcher[String]("nextMoveBy")
+  object statusQueryParamMatcher        extends QueryParamDecoderMatcher[String]("status")
+  object moveFromQueryParamMatcher      extends QueryParamDecoderMatcher[String]("moveFrom")
+  object moveToQueryParamMatcher        extends QueryParamDecoderMatcher[String]("moveTo")
 
   val checkersRoute = HttpRoutes.of[IO] {
 
     //todo: GET with parameters if GameState is not saved on the server side
     case GET -> Root / "checkers" :?
-      boardQueryParamMatcher(board) +&
-        currentColourQueryParamMatcher(currentColour) +&
-        moveFromQueryParamMatcher(moveFrom) +&
-        moveToQueryParamMatcher(moveTo) =>
+      boardQueryParamMatcher(board)                 +&
+      currentColourQueryParamMatcher(currentColour) +&
+      nextMoveByQueryParamMatcher(nextMoveBy)       +&
+      statusQueryParamMatcher(status)               +&
+      moveFromQueryParamMatcher(moveFrom)           +&
+      moveToQueryParamMatcher(moveTo)               =>
 
-      val state: GameState = GameState.fromString(board, currentColour)
-      val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
+      val state: GameState = GameState.fromString(board, currentColour, nextMoveBy, status).get //todo deal with .get
+      val move: PawnMove = PawnMove.fromString(moveFrom, moveTo).get//todo: deal with .get
 
       ValidateMove.apply().apply(move, state) match {
         case Right(newState) => Ok(newState.asJson)
@@ -65,9 +66,11 @@ object Server extends IOApp {
 
     case GET -> Root / "checkersAi" :?
       boardQueryParamMatcher(board) +&
-        currentColourQueryParamMatcher(currentColour) =>
+      nextMoveByQueryParamMatcher(nextMoveBy) +&
+      statusQueryParamMatcher(status) +&
+      currentColourQueryParamMatcher(currentColour) =>
 
-      val state: GameState = GameState.fromString(board, currentColour)
+      val state: GameState = GameState.fromString(board, currentColour, nextMoveBy, status).get //todo deal with .get
       Thread.sleep(500)
       makeAiMove(state)
   }

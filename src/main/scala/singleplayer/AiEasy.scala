@@ -17,7 +17,7 @@ object AiEasy {
     val moveFrom = Random.between(0, 32).toString
     val moveTo   = Random.between(0, 32).toString
 
-    val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
+    val move: PawnMove = PawnMove.fromString(moveFrom, moveTo).get //todo: deal with .get
 
     ValidateMove.apply().apply(move, state) match {
       case Right(newState)  => println(moveFrom + " -> " + moveTo); Ok(newState.asJson)

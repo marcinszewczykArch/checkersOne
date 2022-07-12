@@ -17,8 +17,9 @@ object Side extends Enum[Side] {
   case object White extends Side("w")
   case object Red   extends Side("r")
 
-  def fromString(side: String): Side = side.toLowerCase match {
-    case White.tag             => White
-    case Red.tag               => Red
+  def fromString(side: String): Option[Side] = side.toLowerCase match {
+    case White.tag => Some(White)
+    case Red.tag   => Some(Red)
+    case _         => None
   }
 }

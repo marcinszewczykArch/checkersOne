@@ -90,8 +90,8 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
   private def makeMove(player: Player, board: String, currentColour: String, moveFrom: String, moveTo: String): (MultiplayerState, Seq[OutputMessage]) = {
     findRoomByPlayer(player) match {
       case Some(room) =>
-        val state: GameState  = GameState.fromString(board, currentColour)
-        val move: PawnMove    = PawnMove.fromString(moveFrom, moveTo)
+        val state: GameState  = GameState.fromString(board, currentColour).get //todo: add moveFrom to multiplayer & deal with .get
+        val move: PawnMove    = PawnMove.fromString(moveFrom, moveTo).get //todo: deal with .get
 
         ValidateMove.apply().apply(move, state) match {
           case Right(newGameState)        => (this, sendToRoom(room, WebsocketRoutes.Move, newGameState.asJson.toString))

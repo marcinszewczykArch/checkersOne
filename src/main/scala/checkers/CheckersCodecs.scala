@@ -24,14 +24,15 @@ object CheckersCodecs {
 
   implicit val gameStatusEncoder: Encoder[GameStatus] = Encoder.instance {
     status =>
-      implicit val winEncoder: Encoder[GameStatus.Win] =
-        Encoder.forProduct2("tag", "by")(status => (status.tag, status.by))
+//      implicit val winEncoder: Encoder[GameStatus.Win] =
+//        Encoder.forProduct2("tag", "by")(status => (status.tag, status.by))
 
       status match {
-        case status: GameStatus.Win       => status.asJson
+//        case status: GameStatus.Win       => status.asJson
 
+        case status @ GameStatus.WinWhite => Json.fromFields(Iterable("tag" → status.tag.asJson))
+        case status @ GameStatus.WinRed   => Json.fromFields(Iterable("tag" → status.tag.asJson))
         case status @ GameStatus.Ongoing  => Json.fromFields(Iterable("tag" → status.tag.asJson))
-
         case status @ GameStatus.Draw     => Json.fromFields(Iterable("tag" → status.tag.asJson))
 
       }

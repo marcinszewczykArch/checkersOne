@@ -55,9 +55,8 @@ object PawnPosition {
     PawnPosition(7, 6)  //31
   )
 
-  def fromIndex(index: Int): PawnPosition = availablePositions(index) //todo: this can produce error, this can be use: availablePositions.lift(index)
+  def fromIndex(index: Int): Option[PawnPosition] = availablePositions.lift(index)
 
-  def toIndex(position: PawnPosition): Int = availablePositions.indexOf(position) //todo: this can produce error (if position not exists return is -1)
-
+  def toIndex(position: PawnPosition): Option[Int] = if (availablePositions.indexOf(position) == -1) None else Some(availablePositions.indexOf(position))
 
 }

@@ -19,7 +19,7 @@ object MoveValidationError extends Enum[MoveValidationError] {
   case object MoveTypeIsIncorrect extends MoveValidationError
   case object TooManyPawnsOnTheWay extends MoveValidationError
   case object SmashingOwnPawnIsNotOk extends MoveValidationError
-
+  case object GameIsOver extends MoveValidationError
 
   implicit val showMoveValidationError: Show[MoveValidationError] = {
     case WrongPawnColor                         => "Wrong piece color"
@@ -32,6 +32,7 @@ object MoveValidationError extends Enum[MoveValidationError] {
     case SmashingOwnPawnIsNotOk                 => "Smashing own pawn is not ok"
     case TooManyPawnsOnTheWay                   => "Too many pawns on the way"
     case MoveTypeIsIncorrect                    => "You have to take your opponent's pawn"
+    case GameIsOver                             => "Game is over"
     case IllegalMove                            => "Illegal move"
   }
 }

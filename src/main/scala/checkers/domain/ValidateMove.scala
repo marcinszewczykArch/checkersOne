@@ -152,7 +152,7 @@ object ValidateMove {
     private def isSthToSmash(gameState: GameState): Boolean = {
 
       val pawnsToAnalyze: List[Pawn] = gameState.nextMoveBy.map(List(_))
-        .getOrElse(gameState.board.pawnsArray.filter(_.side == gameState.movesNow))
+        .getOrElse(gameState.board.pawnsList.filter(_.side == gameState.movesNow))
 
       val movesWithSmashForRegular = for {
         pawn <- pawnsToAnalyze.filter(_.pawnType == PawnType.Regular)
@@ -219,7 +219,7 @@ object ValidateMove {
       val smashedPawn: Option[Pawn] = getSmashedPawn(gameState, move)
 
       Board(
-        gameState.board.pawnsArray
+        gameState.board.pawnsList
           .filterNot(_ == oldPawn)
           .filterNot(_ == smashedPawn.orNull)
           .appended(newPawn))
@@ -245,9 +245,9 @@ object ValidateMove {
 
       //todo: check if nextColour is not blocked - if it is, its over!
 
-      if (!boardAfterMove.pawnsArray.exists(_.side == White))
+      if (!boardAfterMove.pawnsList.exists(_.side == White))
         GameStatus.WinRed
-      else if (!boardAfterMove.pawnsArray.exists(_.side == Red))
+      else if (!boardAfterMove.pawnsList.exists(_.side == Red))
         GameStatus.WinWhite
       //    else if (15 moves with queen without smashing) todo: add this condition
       //      GameStatus.Draw

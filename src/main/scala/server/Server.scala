@@ -24,6 +24,8 @@ import singleplayer.AiEasy.makeAiMove
 import scala.concurrent.ExecutionContext
 
 object Server extends IOApp {
+  val port: Int = sys.env("PORT").toInt
+//  val port: Int = 9000
 
   case class State(board: String, currentColour: String)
 
@@ -120,7 +122,7 @@ object Server extends IOApp {
 
       exitCode <- {
         val httpStream = BlazeServerBuilder[IO](ExecutionContext.global)
-          .bindHttp(port = 9000, host = "localhost")
+          .bindHttp(port = port, host = "localhost")
           .withHttpApp(CORS(httpApp(ref, queue, topic)))
           .serve
 

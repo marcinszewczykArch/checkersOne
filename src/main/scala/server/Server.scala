@@ -1,7 +1,7 @@
 package server
 
 import cats.effect.concurrent.Ref
-import cats.effect.{ConcurrentEffect, ExitCode, IO, IOApp}
+import cats.effect.{ConcurrentEffect, ContextShift, ExitCode, IO, IOApp, Timer}
 import cats.implicits._
 import checkers.CheckersCodecs.gameStateEncoder
 import checkers.domain.{GameState, PawnMove, ValidateMove}
@@ -23,7 +23,7 @@ import singleplayer.AiEasy.makeAiMove
 //import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext
 
-object Server extends IOApp {
+object Server {
 
   case class State(board: String, currentColour: String)
 
@@ -35,6 +35,8 @@ object Server extends IOApp {
   object moveToQueryParamMatcher        extends QueryParamDecoderMatcher[String]("moveTo")
 
   val checkersRoute = HttpRoutes.of[IO] {
+
+    case GET -> Root => Ok("Server is running...")
 
     //todo: GET with parameters if GameState is not saved on the server side
     case GET -> Root / "checkers" :?
@@ -75,7 +77,6 @@ object Server extends IOApp {
       makeAiMove(state)
   }
 
-
   def multiplayerRoutes(state: Ref[IO, MultiplayerState], queue: Queue[IO, InputMessage], topic: Topic[IO, OutputMessage]): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
 
@@ -111,13 +112,14 @@ object Server extends IOApp {
     checkersRoute <+> multiplayerRoutes(chatState, queue, topic)
   }.orNotFound
 
-  override def run(args: List[String]): IO[ExitCode] = {
+  def start: IO[ExitCode] = {
+    implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+    implicit val t: Timer[IO] = IO.timer(ExecutionContext.global)
 
     for (
       queue <- Queue.unbounded[IO, InputMessage];
       topic <- Topic[IO, OutputMessage](SendToUsers(List.empty, WebsocketRoutes.None, ""));
       ref   <- Ref.of[IO, MultiplayerState](MultiplayerState());
-
       port  <- ConcurrentEffect[IO].delay(sys.env.get("PORT").flatMap(_.toIntOption).getOrElse(9000));
 
       exitCode <- {

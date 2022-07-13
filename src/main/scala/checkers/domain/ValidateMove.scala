@@ -9,7 +9,7 @@ import checkers.domain.ValidateMove.ErrorOr
 trait ValidateMove {
   def apply(
              move: PawnMove,
-             gameState: GameState //todo: this take game state, but from user we get only board and current colour (others are by default)
+             gameState: GameState
            ): ErrorOr[GameState]
 }
 
@@ -19,15 +19,15 @@ object ValidateMove {
   def apply(): ValidateMove = new ValidateMove {
 
     override def apply(move: PawnMove, gameState: GameState): ErrorOr[GameState] = for {
-      _ <- gameIsOngoing(gameState)
-      pawn <- gameState.board.pawnAt(move.from).toRight(NoPawnAtStartingPosition)
-      _ <- startAndDestinationCoordinatesDiffer(move)
-      _ <- destinationPositionIsAvailable(gameState, move)
-      _ <- pawnColourIsCorrect(pawn, gameState, move)
-      _ <- pawnIsCorrectIfMultipleSmashingContinues(gameState, move)
-      _ <- moveIsDiagonal(move)
-      moveType <- getMoveType(gameState, move)
-      _ <- moveTypeIsCorrect(moveType, isSthToSmash(gameState))
+      _         <- gameIsOngoing(gameState)
+      pawn      <- gameState.board.pawnAt(move.from).toRight(NoPawnAtStartingPosition)
+      _         <- startAndDestinationCoordinatesDiffer(move)
+      _         <- destinationPositionIsAvailable(gameState, move)
+      _         <- pawnColourIsCorrect(pawn, gameState, move)
+      _         <- pawnIsCorrectIfMultipleSmashingContinues(gameState, move)
+      _         <- moveIsDiagonal(move)
+      moveType  <- getMoveType(gameState, move)
+      _         <- moveTypeIsCorrect(moveType, isSthToSmash(gameState))
       gameState <- getNewState(gameState, move, moveType)
     } yield gameState
 
@@ -88,8 +88,8 @@ object ValidateMove {
 
       pawnType match {
         case Some(PawnType.Regular) => getMoveTypeRegular(gameState: GameState, move: PawnMove)
-        case Some(PawnType.Queen) => getMoveTypeQueen(gameState: GameState, move: PawnMove)
-        case _ => Left(IllegalMove)
+        case Some(PawnType.Queen)   => getMoveTypeQueen(gameState: GameState, move: PawnMove)
+        case _                      => Left(IllegalMove)
       }
     }
 
@@ -98,9 +98,9 @@ object ValidateMove {
       moveType match {
         case Single => Right(
           GameState(
-            status = GameStatus.Ongoing,
-            movesNow = gameState.movesNow.opposite,
-            board = getBoardAfterMove(gameState, move).promoteForQueen(),
+            status     = GameStatus.Ongoing,
+            movesNow   = gameState.movesNow.opposite,
+            board      = getBoardAfterMove(gameState, move).promoteForQueen(),
             nextMoveBy = None
           )
         )
@@ -111,9 +111,9 @@ object ValidateMove {
 
           Right(
             GameState(
-              status = checkNewStatus(boardAfterMove),
-              movesNow = if (isNextToSmash) gameState.movesNow else gameState.movesNow.opposite,
-              board = if (isNextToSmash) boardAfterMove else boardAfterMove.promoteForQueen(),
+              status     = checkNewStatus(boardAfterMove),
+              movesNow   = if (isNextToSmash) gameState.movesNow else gameState.movesNow.opposite,
+              board      = if (isNextToSmash) boardAfterMove else boardAfterMove.promoteForQueen(),
               nextMoveBy = if (isNextToSmash) boardAfterMove.pawnAt(move.to) else None
             )
           )
@@ -125,13 +125,13 @@ object ValidateMove {
     private def getMoveTypeRegular(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
 
       if (((move.to == move.from.upLeft() || move.to == move.from.downLeft()) && gameState.movesNow == White) ||
-        ((move.to == move.from.upRight() || move.to == move.from.downRight()) && gameState.movesNow == Red))
+         ((move.to == move.from.upRight() || move.to == move.from.downRight()) && gameState.movesNow == Red))
         Right(Single)
 
-      else if ((move.to == move.from.doubleUpLeft() && gameState.board.pawnExists(move.from.upLeft(), gameState.movesNow.opposite)) ||
-        (move.to == move.from.doubleDownLeft() && gameState.board.pawnExists(move.from.downLeft(), gameState.movesNow.opposite)) ||
-        (move.to == move.from.doubleUpRight() && gameState.board.pawnExists(move.from.upRight(), gameState.movesNow.opposite)) ||
-        (move.to == move.from.doubleDownRight() && gameState.board.pawnExists(move.from.downRight(), gameState.movesNow.opposite)))
+      else if ((move.to == move.from.doubleUpLeft()   && gameState.board.pawnExists(move.from.upLeft(),    gameState.movesNow.opposite)) ||
+              (move.to == move.from.doubleDownLeft()  && gameState.board.pawnExists(move.from.downLeft(),  gameState.movesNow.opposite)) ||
+              (move.to == move.from.doubleUpRight()   && gameState.board.pawnExists(move.from.upRight(),   gameState.movesNow.opposite)) ||
+              (move.to == move.from.doubleDownRight() && gameState.board.pawnExists(move.from.downRight(), gameState.movesNow.opposite)))
         Right(WithSmash)
 
       else
@@ -144,8 +144,8 @@ object ValidateMove {
       pawnsOnTheWay.size match {
         case 0                                                           => Right(Single)
         case 1 if pawnsOnTheWay.head.side == gameState.movesNow.opposite => Right(WithSmash)
-        case 1                                                           => Left(MoveValidationError.SmashingOwnPawnIsNotOk)
-        case _                                                           => Left(MoveValidationError.TooManyPawnsOnTheWay)
+        case 1                                                           => Left(SmashingOwnPawnIsNotOk)
+        case _                                                           => Left(TooManyPawnsOnTheWay)
       }
     }
 
@@ -176,11 +176,10 @@ object ValidateMove {
         move = PawnMove(moveFrom, moveTo) if getMoveTypeQueen(gameState, move) == Right(WithSmash)
       } yield move
 
-      (movesWithSmashForRegular ++ movesWithSmashForQueen).length > 0
+      (movesWithSmashForRegular ++ movesWithSmashForQueen).nonEmpty
     }
 
     private def getSmashedPawn(gameState: GameState, move: PawnMove): Option[Pawn] = {
-
       gameState.board.pawnAt(move.from).map(_.pawnType) match {
 
         case Some(Regular) =>
@@ -244,6 +243,8 @@ object ValidateMove {
 
     private def checkNewStatus(boardAfterMove: Board): GameStatus = {
 
+      //todo: check if nextColour is not blocked - if it is, its over!
+
       if (!boardAfterMove.pawnsArray.exists(_.side == White))
         GameStatus.WinRed
       else if (!boardAfterMove.pawnsArray.exists(_.side == Red))
@@ -253,7 +254,6 @@ object ValidateMove {
       else
         GameStatus.Ongoing
     }
-
 
   }
 }

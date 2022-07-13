@@ -12,6 +12,6 @@ object WebsocketRoutes extends Enum[WebsocketRoutes] {
   case object Move  extends WebsocketRoutes("/move ")
   case object Chat  extends WebsocketRoutes("/chat ")
   case object Error extends WebsocketRoutes("/error ")
-  case object None extends WebsocketRoutes("")
+  case object None  extends WebsocketRoutes("")
 }
 

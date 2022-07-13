@@ -8,7 +8,6 @@ object GameStatus extends Enum[GameStatus] {
   val values: IndexedSeq[GameStatus] = findValues
 
   case object Ongoing extends GameStatus("ongoing")
-//  final case class Win(by: Side) extends GameStatus("win")
   case object WinRed extends GameStatus("winred")
   case object WinWhite extends GameStatus("winwhite")
   case object Draw extends GameStatus("draw")

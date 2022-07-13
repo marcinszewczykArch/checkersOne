@@ -6,9 +6,9 @@ import checkers.domain.PawnType.Regular
 import checkers.domain.Side.{Red, White}
 import cats.implicits._
 
-final case class Board (pawnsArray: List[Pawn]) {
+final case class Board (pawnsList: List[Pawn]) {
 
-  def pawnAt(position: PawnPosition): Option[Pawn] = pawnsArray.find(_.position == position)
+  def pawnAt(position: PawnPosition): Option[Pawn] = pawnsList.find(_.position == position)
 
   def findPawn(position: PawnPosition, side: Side): Option[Pawn] = pawnAt(position).filter(_.side == side)
 
@@ -17,13 +17,13 @@ final case class Board (pawnsArray: List[Pawn]) {
   def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty && position.isOnTheBoard
 
   def promoteForQueen(): Board = {
-    val pawnToPromote: Option[Pawn] = this.pawnsArray
+    val pawnToPromote: Option[Pawn] = this.pawnsList
       .filter(_.pawnType == Regular)
       .find(o => o.position.x == 0 && o.side == White || o.position.x == 7 && o.side == Red)
 
     if (pawnToPromote.isDefined) {
       Board(
-        this.pawnsArray
+        this.pawnsList
           .filterNot(_ == pawnToPromote.get)
           .appended(Pawn(pawnToPromote.get.side, PawnType.Queen, pawnToPromote.get.position))
       )
@@ -33,7 +33,7 @@ final case class Board (pawnsArray: List[Pawn]) {
   }
 
   override def toString: String = {
-    val boardArray: List[(Int, PawnType, Side)] = this.pawnsArray.map(o => (toIndex(o.position).get, o.pawnType, o.side)) //todo: deal with .get here
+    val boardArray: List[(Int, PawnType, Side)] = this.pawnsList.map(o => (toIndex(o.position).get, o.pawnType, o.side)) //todo: deal with .get here
     availablePositions.indices.map(n =>
       boardArray
         .find(_._1 == n)
@@ -53,15 +53,14 @@ object Board {
   final val EMPTY_POSITION = "o"
 
   def fromString(board: String): Option[Board] = {
-
     board
       .split("")
       .zipWithIndex
       .filter(o => o._1 != EMPTY_POSITION)
       .map(o => (Side.fromString(o._1), PawnType.fromString(o._1), PawnPosition.fromIndex(o._2)))
       .map {
-        case (Some(side), pawnType, Some(pawnPosition)) => Some(Pawn(side, pawnType, pawnPosition))
-        case _ => None
+        case (Some(side), Some(pawnType), Some(pawnPosition)) => Some(Pawn(side, pawnType, pawnPosition))
+        case _                                                => None
       }
       .toList
       .traverse(identity)
@@ -71,7 +70,6 @@ object Board {
     }
 
   }
-
 
   def initial: Board = {
     new Board(

@@ -8,6 +8,7 @@ import scala.util.{Failure, Success}
 import java.time.LocalDate
 import scala.concurrent.Future
 
+//todo: this is only exercise - not working
 object DataBaseConnection extends App {
   case class Player3(id: Long, name: String, country: String, dob: LocalDate)
 

@@ -1,7 +1,7 @@
 package server
 
 import cats.effect.concurrent.Ref
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ConcurrentEffect, ExitCode, IO, IOApp}
 import cats.implicits._
 import checkers.CheckersCodecs.gameStateEncoder
 import checkers.domain.{GameState, PawnMove, ValidateMove}
@@ -24,8 +24,6 @@ import singleplayer.AiEasy.makeAiMove
 import scala.concurrent.ExecutionContext
 
 object Server extends IOApp {
-  val port: Int = sys.env("PORT").toInt
-//  val port: Int = 9000
 
   case class State(board: String, currentColour: String)
 
@@ -120,9 +118,12 @@ object Server extends IOApp {
       topic <- Topic[IO, OutputMessage](SendToUsers(List.empty, WebsocketRoutes.None, ""));
       ref   <- Ref.of[IO, MultiplayerState](MultiplayerState());
 
+      port  <- ConcurrentEffect[IO].delay(sys.env.get("PORT").flatMap(_.toIntOption).getOrElse(9000));
+
       exitCode <- {
+
         val httpStream = BlazeServerBuilder[IO](ExecutionContext.global)
-          .bindHttp(port = port, host = "localhost")
+          .bindHttp(port = port, "0.0.0.0")
           .withHttpApp(CORS(httpApp(ref, queue, topic)))
           .serve
 

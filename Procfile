@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/checkersOne
+web: target/universal/stage/bin/checkersone

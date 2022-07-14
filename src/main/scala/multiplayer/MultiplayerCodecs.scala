@@ -6,8 +6,8 @@ import multiplayer.domain.{MultiplayerState, Player, Room}
 
 object MultiplayerCodecs {
 
-  implicit val playerEncoder: Encoder[Player] = {
-    player => Json.fromString(player.name)
+  implicit val playerEncoder: Encoder[Player] = { player =>
+    Json.fromString(player.name)
   }
 
   implicit val roomEncoder: Encoder[Room] = semiauto.deriveEncoder[Room]

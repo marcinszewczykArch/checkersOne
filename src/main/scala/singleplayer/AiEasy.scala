@@ -20,8 +20,8 @@ object AiEasy {
     val move: PawnMove = PawnMove.fromString(moveFrom, moveTo).get //todo: deal with .get
 
     ValidateMove.apply().apply(move, state) match {
-      case Right(newState)  => println(moveFrom + " -> " + moveTo); Ok(newState.asJson)
-      case Left(_)          => makeAiMove(state)
+      case Right(newState) => println(moveFrom + " -> " + moveTo); Ok(newState.asJson)
+      case Left(_)         => makeAiMove(state)
     }
   }
 

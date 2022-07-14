@@ -3,13 +3,11 @@ package checkers.domain
 import checkers.domain.Side.White
 
 final case class GameState(
-    status: GameStatus = GameStatus.Ongoing,
-    movesNow: Side,
-    board: Board,
-    nextMoveBy: Option[Pawn] = None
-  ) {
-
-}
+  status: GameStatus = GameStatus.Ongoing,
+  movesNow: Side,
+  board: Board,
+  nextMoveBy: Option[Pawn] = None
+) {}
 
 object GameState {
   def initial: GameState =
@@ -22,19 +20,24 @@ object GameState {
 
   //todo: remove default values from nextMoveBy and status
   //todo: how to do this in one for-comprehension structure?
-  def fromString(board: String, movesNow: String, nextMoveBy: String = "None", status: String = "ongoing"): Option[GameState] = {
+  def fromString(
+    board: String,
+    movesNow: String,
+    nextMoveBy: String = "None",
+    status: String = "ongoing"
+  ): Option[GameState] = {
 
     val nextMoveByOption: Option[Pawn] = for {
-      board         <- Board.fromString(board)
-      index         <- nextMoveBy.toIntOption
-      pawnPosition  <- PawnPosition.fromIndex(index)
-      pawn          <- board.pawnAt(pawnPosition)
+      board        <- Board.fromString(board)
+      index        <- nextMoveBy.toIntOption
+      pawnPosition <- PawnPosition.fromIndex(index)
+      pawn         <- board.pawnAt(pawnPosition)
     } yield pawn
 
     for {
-      movesNow      <- Side.fromString(movesNow)
-      board         <- Board.fromString(board)
-      gameStatus    <- GameStatus.fromString(status)
+      movesNow   <- Side.fromString(movesNow)
+      board      <- Board.fromString(board)
+      gameStatus <- GameStatus.fromString(status)
     } yield GameState(gameStatus, movesNow, board, nextMoveByOption)
 
   }

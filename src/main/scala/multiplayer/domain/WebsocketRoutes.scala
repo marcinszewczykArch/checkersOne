@@ -2,8 +2,7 @@ package multiplayer.domain
 
 import enumeratum._
 
-sealed abstract class WebsocketRoutes(val tag: String) extends EnumEntry {
-}
+sealed abstract class WebsocketRoutes(val tag: String) extends EnumEntry {}
 
 object WebsocketRoutes extends Enum[WebsocketRoutes] {
   val values: IndexedSeq[WebsocketRoutes] = findValues
@@ -14,4 +13,3 @@ object WebsocketRoutes extends Enum[WebsocketRoutes] {
   case object Error extends WebsocketRoutes("/error ")
   case object None  extends WebsocketRoutes("")
 }
-

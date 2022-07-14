@@ -1,9 +1,9 @@
 package checkers.domain
 
 import enumeratum._
-import Side._
 
 sealed abstract class Side(val tag: String) extends EnumEntry {
+  import Side._
 
   def opposite: Side =
     this match {

@@ -10,16 +10,17 @@ val LogbackVersion = "1.2.3"
 enablePlugins(JavaAppPackaging)
 
 libraryDependencies ++= Seq(
-  "org.http4s"          %% "http4s-blaze-server"  % http4sVersion,
-  "org.http4s"          %% "http4s-circe"         % http4sVersion,
-  "org.http4s"          %% "http4s-dsl"           % http4sVersion,
-  "org.http4s"          %% "http4s-blaze-client"  % http4sVersion,
+  "org.http4s"          %% "http4s-blaze-server"    % http4sVersion,
+  "org.http4s"          %% "http4s-circe"           % http4sVersion,
+  "org.http4s"          %% "http4s-dsl"             % http4sVersion,
+  "org.http4s"          %% "http4s-blaze-client"    % http4sVersion,
   "org.http4s"          %% "http4s-jdk-http-client" % "0.3.6",
 
-  "org.scalatest"       %% "scalatest"              % "3.2.12"  % Test,
+  "org.scalactic"       %% "scalactic"              % "3.2.12",
+  "org.scalatest"       %% "scalatest"              % "3.2.12"          % "test",
   "org.scalamock"       %% "scalamock"              % "5.1.0"           % "test",
 
-  "io.circe"            %% "circe-generic"        % CirceVersion,
+  "io.circe"            %% "circe-generic"          % CirceVersion,
 //  "ch.qos.logback"      %% "logback-classic"      % "1.1.3"          % Runtime,
   "org.slf4j"           % "slf4j-nop"             % "1.7.36",
   "com.typesafe.slick"  %% "slick"                % "3.3.3",

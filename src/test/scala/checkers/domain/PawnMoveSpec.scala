@@ -1,9 +1,10 @@
 package checkers.domain
 
-import org.scalatest.freespec.AnyFreeSpec
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should
 
-class PawnMoveSpec extends AnyFreeSpec {
+class PawnMoveSpec extends AnyFlatSpec with should.Matchers {
 
-  ???
+
 
 }

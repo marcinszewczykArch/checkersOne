@@ -129,6 +129,7 @@ object ValidateMove {
           case _         => Left(IllegalMove)
         }
 
+      //todo: get rid of def's like .downLeft() etc
       private def getMoveTypeRegular(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] =
         if (
           ((move.to == move.from.upLeft() || move.to == move.from.downLeft()) && gameState.movesNow == White) ||

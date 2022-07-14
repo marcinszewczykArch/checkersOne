@@ -26,7 +26,6 @@ object MoveValidationError extends Enum[MoveValidationError] {
     case DestinationNotAvailable              => "Destination is not available"
     case NoPawnAtStartingPosition             => "No piece at starting position"
     case IdenticalStartAndDestinationPosition => "Move's start and destination can not be identical"
-    case OpponentPawnToTake                   => "You have to take your opponent's pawn"
     case ContinueMultipleSmashing             => "You have to continue your multiple smashing with the same pawn"
     case MoveIsNotDiagonal                    => "Move is not diagonal"
     case SmashingOwnPawnIsNotOk               => "Smashing own pawn is not ok"

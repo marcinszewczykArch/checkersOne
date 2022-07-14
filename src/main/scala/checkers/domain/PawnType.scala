@@ -17,6 +17,5 @@ object PawnType extends Enum[PawnType] {
     }
 
   case object Regular extends PawnType
-
   case object Queen   extends PawnType
 }

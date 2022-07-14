@@ -1,9 +1,9 @@
 package checkers.domain
 
 import enumeratum._
+import Side._
 
 sealed abstract class Side(val tag: String) extends EnumEntry {
-  import Side._
 
   def opposite: Side =
     this match {
@@ -23,6 +23,5 @@ object Side extends Enum[Side] {
     }
 
   case object White extends Side("w")
-
-  case object Red   extends Side("r")
+  case object Red extends Side("r")
 }

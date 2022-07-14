@@ -6,6 +6,7 @@ val http4sVersion = "0.21.22"
 val CirceVersion = "0.14.0-M5"
 val Specs2Version  = "4.8.0"
 val LogbackVersion = "1.2.3"
+val scalaTestVersion = "3.2.7.0"
 
 enablePlugins(JavaAppPackaging)
 
@@ -19,6 +20,8 @@ libraryDependencies ++= Seq(
   "org.scalactic"       %% "scalactic"              % "3.2.12",
   "org.scalatest"       %% "scalatest"              % "3.2.12"          % "test",
   "org.scalamock"       %% "scalamock"              % "5.1.0"           % "test",
+  "org.scalatestplus"   %% "scalacheck-1-15"        % scalaTestVersion  % Test,
+  "org.scalatestplus"   %% "selenium-3-141"         % scalaTestVersion  % Test,
 
   "io.circe"            %% "circe-generic"          % CirceVersion,
 //  "ch.qos.logback"      %% "logback-classic"      % "1.1.3"          % Runtime,

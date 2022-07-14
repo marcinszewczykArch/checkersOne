@@ -8,10 +8,6 @@ import checkers.domain.Side.{Red, White}
 
 final case class Board(pawnsList: List[Pawn]) {
 
-  def pawnExists(position: PawnPosition, side: Side): Boolean = findPawn(position, side).isDefined
-
-  def findPawn(position: PawnPosition, side: Side): Option[Pawn] = pawnAt(position).filter(_.side == side)
-
   def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty && position.isOnTheBoard
 
   def pawnAt(position: PawnPosition): Option[Pawn] = pawnsList.find(_.position == position)

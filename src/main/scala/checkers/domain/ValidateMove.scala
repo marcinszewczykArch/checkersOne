@@ -129,26 +129,18 @@ object ValidateMove {
           case _         => Left(IllegalMove)
         }
 
-      //todo: get rid of def's like .downLeft() etc
-      private def getMoveTypeRegular(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] =
-        if (
-          ((move.to == move.from.upLeft() || move.to == move.from.downLeft()) && gameState.movesNow == White) ||
-          ((move.to == move.from.upRight() || move.to == move.from.downRight()) && gameState.movesNow == Red)
-        )
-          Right(Single)
-        else if (
-          (move.to == move.from
-            .doubleUpLeft() && gameState.board.pawnExists(move.from.upLeft(), gameState.movesNow.opposite)) ||
-          (move.to == move.from
-            .doubleDownLeft() && gameState.board.pawnExists(move.from.downLeft(), gameState.movesNow.opposite)) ||
-          (move.to == move.from
-            .doubleUpRight() && gameState.board.pawnExists(move.from.upRight(), gameState.movesNow.opposite)) ||
-          (move.to == move.from
-            .doubleDownRight() && gameState.board.pawnExists(move.from.downRight(), gameState.movesNow.opposite))
-        )
-          Right(WithSmash)
-        else
-          Left(MoveValidationError.IllegalMove)
+      private def getMoveTypeRegular(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
+        val movesNow = gameState.movesNow
+        val opponent = movesNow.opposite
+
+        move.from.x - move.to.x match {
+          case 1 if movesNow == White                                             => Right(Single)
+          case -1 if movesNow == Red                                              => Right(Single)
+          case 2 if getPawnsOnTheWay(gameState, move).exists(_.side == opponent)  => Right(WithSmash)
+          case -2 if getPawnsOnTheWay(gameState, move).exists(_.side == opponent) => Right(WithSmash)
+          case _                                                                  => Left(IllegalMove)
+        }
+      }
 
       private def getMoveTypeQueen(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
         val pawnsOnTheWay: List[Pawn] = getPawnsOnTheWay(gameState, move)

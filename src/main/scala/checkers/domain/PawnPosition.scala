@@ -2,30 +2,20 @@ package checkers.domain
 
 import checkers.domain.PawnPosition.availablePositions
 
-final case class PawnPosition(x: Int, y: Int) {
+final case class PawnPosition(x: Int, y: Int) { //todo: validation x+y is odd number && 8>x>=0 && 8>y>=0
 
   def isOnTheBoard: Boolean = availablePositions.contains(this)
 
-  //todo: all def's below to be removed
-  def doubleUpRight(): PawnPosition = this.upRight().upRight()
-
-  def upRight(): PawnPosition = PawnPosition(x + 1, y + 1) //todo: to return either and left if it is not on the board
-
-  def doubleDownRight(): PawnPosition = this.downRight().downRight()
-
-  def downRight(): PawnPosition = PawnPosition(x + 1, y - 1)
-
-  def doubleUpLeft(): PawnPosition = this.upLeft().upLeft()
-
-  def upLeft(): PawnPosition = PawnPosition(x - 1, y + 1)
-
-  def doubleDownLeft(): PawnPosition = this.downLeft().downLeft()
-
-  def downLeft(): PawnPosition = PawnPosition(x - 1, y - 1)
 }
 
 object PawnPosition {
   def fromIndex(index: Int): Option[PawnPosition] = availablePositions.lift(index)
+
+  def toIndex(position: PawnPosition): Option[Int] =
+    if (availablePositions.indexOf(position) == -1)
+      None
+    else
+      Some(availablePositions.indexOf(position))
 
   def availablePositions: List[PawnPosition] =
     List(
@@ -62,8 +52,4 @@ object PawnPosition {
       PawnPosition(7, 4), //30
       PawnPosition(7, 6)  //31
     )
-
-  def toIndex(position: PawnPosition): Option[Int] =
-    if (availablePositions.indexOf(position) == -1) None else Some(availablePositions.indexOf(position))
-
 }

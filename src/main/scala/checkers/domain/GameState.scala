@@ -19,7 +19,6 @@ object GameState {
     )
 
   //todo: remove default values from nextMoveBy and status
-  //todo: how to do this in one for-comprehension structure?
   def fromString(
     board: String,
     movesNow: String,

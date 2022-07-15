@@ -17,11 +17,8 @@ object GameStatus extends Enum[GameStatus] {
     }
 
   case object Ongoing  extends GameStatus("ongoing")
-
   case object WinRed   extends GameStatus("winred")
-
   case object WinWhite extends GameStatus("winwhite")
-
   case object Draw     extends GameStatus("draw")
 
 }

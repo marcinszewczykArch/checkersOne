@@ -14,18 +14,12 @@ object CheckersCodecs {
     Json.fromInt(PawnPosition.availablePositions.indexOf(pawn.position))
   }
 
-  implicit val sideStatusEncoder: Encoder[Side] = Encoder.instance { side =>
-    Json.fromString(side.tag)
-  }
+  implicit val sideStatusEncoder: Encoder[Side] = Encoder.instance { side => Json.fromString(side.tag) }
 
   implicit val gameStateEncoder: Encoder[GameState] = deriveEncoder[GameState]
 
-  implicit val gameStatusEncoder: Encoder[GameStatus] = Encoder.instance { status =>
-    Json.fromString(status.tag)
-  }
+  implicit val gameStatusEncoder: Encoder[GameStatus] = Encoder.instance { status => Json.fromString(status.tag) }
 
-  implicit val boardStatusEncoder: Encoder[Board] = Encoder.instance { board =>
-    Json.fromString(board.toString)
-  }
+  implicit val boardStatusEncoder: Encoder[Board] = Encoder.instance { board => Json.fromString(board.toString) }
 
 }

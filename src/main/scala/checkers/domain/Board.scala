@@ -12,24 +12,23 @@ final case class Board(pawnsList: List[Pawn]) {
 
   def pawnAt(position: PawnPosition): Option[Pawn] = pawnsList.find(_.position == position)
 
-  def promoteForQueen(): Board = {
-    val pawnToPromote: Option[Pawn] = this.pawnsList
+  def promoteForQueen(): Board =
+    this.pawnsList
       .filter(_.pawnType == Regular)
-      .find(o => o.position.x == 0 && o.side == White || o.position.x == 7 && o.side == Red)
-
-    if (pawnToPromote.isDefined)
-      Board(
-        this.pawnsList
-          .filterNot(_ == pawnToPromote.get)
-          .appended(Pawn(pawnToPromote.get.side, PawnType.Queen, pawnToPromote.get.position))
+      .find(o => (o.position.x == 0 && o.side == White) || (o.position.x == 7 && o.side == Red))
+      .map(pawnToPromote =>
+        Board(
+          this.pawnsList
+            .filterNot(_ == pawnToPromote)
+            .appended(Pawn(pawnToPromote.side, PawnType.Queen, pawnToPromote.position))
+        )
       )
-    else
-      this
-  }
+      .getOrElse(this)
 
   override def toString: String = {
     val boardArray: List[(Int, PawnType, Side)] =
       this.pawnsList.map(o => (toIndex(o.position).get, o.pawnType, o.side)) //todo: deal with .get here
+
     availablePositions.indices
       .map(n =>
         boardArray
@@ -54,19 +53,24 @@ object Board {
   def initial: Board = fromString("rrrrrrrrrrrroooooooowwwwwwwwwwww").get
 
   def fromString(board: String): Option[Board] =
-    board
-      .split("")
-      .zipWithIndex
-      .filter(o => o._1 != EMPTY_POSITION)
-      .map(o => (Side.fromString(o._1), PawnType.fromString(o._1), PawnPosition.fromIndex(o._2)))
-      .map {
-        case (Some(side), Some(pawnType), Some(pawnPosition)) => Some(Pawn(side, pawnType, pawnPosition))
-        case _                                                => None
-      }
-      .toList
-      .traverse(identity) match {
-      case Some(pawns) => Some(Board(pawns))
-      case _           => None
+    board.length match {
+      case 32 =>
+        board
+          .split("")
+          .zipWithIndex
+          .filter(o => o._1 != EMPTY_POSITION)
+          .map(o => (Side.fromString(o._1), PawnType.fromString(o._1), PawnPosition.fromIndex(o._2)))
+          .map {
+            case (Some(side), Some(pawnType), Some(pawnPosition)) => Some(Pawn(side, pawnType, pawnPosition))
+            case _                                                => None
+          }
+          .toList
+          .traverse(identity) match {
+          case Some(pawns) => Some(Board(pawns))
+          case _           => None
+        }
+
+      case _  => None
     }
 
 }

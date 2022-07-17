@@ -6,6 +6,8 @@ import multiplayer.domain.{MultiplayerState, Player, Room}
 
 object MultiplayerCodecs {
 
+  import checkers.CheckersCodecs.gameStateEncoder
+
   implicit val playerEncoder: Encoder[Player] = { player =>
     Json.fromString(player.name)
   }

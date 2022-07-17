@@ -26,8 +26,9 @@ final case class Board(pawnsList: List[Pawn]) {
       .getOrElse(this)
 
   override def toString: String = {
+
     val boardArray: List[(Int, PawnType, Side)] =
-      this.pawnsList.map(o => (toIndex(o.position).get, o.pawnType, o.side)) //todo: deal with .get here
+      this.pawnsList.map(o => (toIndex(o.position), o.pawnType, o.side))
 
     availablePositions.indices
       .map(n =>

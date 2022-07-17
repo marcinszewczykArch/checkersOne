@@ -11,11 +11,7 @@ final case class PawnPosition(x: Int, y: Int) { //todo: validation x+y is odd nu
 object PawnPosition {
   def fromIndex(index: Int): Option[PawnPosition] = availablePositions.lift(index)
 
-  def toIndex(position: PawnPosition): Option[Int] =
-    if (availablePositions.indexOf(position) == -1)
-      None
-    else
-      Some(availablePositions.indexOf(position))
+  def toIndex(position: PawnPosition): Int = availablePositions.indexOf(position)
 
   def availablePositions: List[PawnPosition] =
     List(

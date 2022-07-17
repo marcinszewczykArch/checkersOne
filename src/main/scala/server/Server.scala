@@ -20,12 +20,11 @@ import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.{Close, Text}
 import org.http4s.{HttpApp, HttpRoutes}
 import singleplayer.AiEasy.makeAiMove
-//import io.circe.generic.auto._
 import scala.concurrent.ExecutionContext
 
 object Server {
 
-  val checkersRoute = HttpRoutes.of[IO] {
+  val singleplayerRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
 
     case GET -> Root => Ok("Server is running...")
 
@@ -44,6 +43,8 @@ object Server {
         case Right(newState)       => Ok(newState.asJson)
         case Left(validationError) => NotAcceptable(validationError.show)
       }
+
+    case GET -> Root / "initialstate" => Ok(GameState.initial.asJson)
 
     //todo: POST with body if GameState is saved on the server side (request is changing the state)
 //    case req@POST -> Root / "checkers" =>
@@ -100,7 +101,7 @@ object Server {
     queue: Queue[IO, InputMessage],
     topic: Topic[IO, OutputMessage]
   ): HttpApp[IO] = {
-    checkersRoute <+> multiplayerRoutes(chatState, queue, topic)
+    singleplayerRoutes <+> multiplayerRoutes(chatState, queue, topic)
   }.orNotFound
 
   def multiplayerRoutes(
@@ -138,17 +139,10 @@ object Server {
         WebSocketBuilder[IO].build(toClient, inputPipe)
     }
 
-  case class State(board: String, currentColour: String)
-
   object boardQueryParamMatcher         extends QueryParamDecoderMatcher[String]("board")
-
   object currentColourQueryParamMatcher extends QueryParamDecoderMatcher[String]("currentColour")
-
   object nextMoveByQueryParamMatcher    extends QueryParamDecoderMatcher[String]("nextMoveBy")
-
   object statusQueryParamMatcher        extends QueryParamDecoderMatcher[String]("status")
-
   object moveFromQueryParamMatcher      extends QueryParamDecoderMatcher[String]("moveFrom")
-
   object moveToQueryParamMatcher        extends QueryParamDecoderMatcher[String]("moveTo")
 }

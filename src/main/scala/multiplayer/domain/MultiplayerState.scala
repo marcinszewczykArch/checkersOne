@@ -131,7 +131,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
     findRoomByPlayer(player) match {
 
       case Some(room) =>
-        if (room.players.size >= 2)
+        if (room.players.size == 2)
           PawnMove.fromString(moveFrom, moveTo) match {
 
             case None       => (this, Seq(SendToUser(player, WebsocketRoutes.ErrorRoute, "move input incorrect")))

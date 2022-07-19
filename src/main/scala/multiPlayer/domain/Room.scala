@@ -1,4 +1,4 @@
-package multiplayer.domain
+package multiPlayer.domain
 
 import checkers.domain.GameState
 

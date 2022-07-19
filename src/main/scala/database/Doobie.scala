@@ -17,22 +17,6 @@ object Doobie {
 //
 //  val operation3             = sql"SELECT name FROM person".query[Int].to[List]
 //  val result3: IO[List[Int]] = operation3.transact(transactor)
-//
-//  val operation4: doobie.ConnectionIO[(String, String)] = {
-//    val create   = sql"CREATE table kv(k VARCHAR(100) PRIMARY KEY, v VARCHAR(100))"
-//    val key      = "key"
-//    val value    = "value"
-//    val insert   = sql"INSERT INTO kv (k, v) VALUES ($key, $value)"
-//    val newValue = "fixed value"
-//    val update   = sql"UPDATE kv SET v = $newValue WHERE k = $key"
-//    val select   = sql"SELECT k, v FROM kv"
-//
-//    create.update.run *>
-//      insert.update.run *>
-//      update.update.run *>
-//      select.query[(String, String)].unique
-//  }
-//  val result4: IO[(String, String)] = operation4.transact(transactor)
 
   val initialSchema = {
     val dropGameStateTable =

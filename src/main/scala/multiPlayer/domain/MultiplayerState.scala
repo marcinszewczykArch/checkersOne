@@ -1,9 +1,9 @@
-package multiplayer.domain
+package multiPlayer.domain
 
 import cats.implicits._
 import checkers.domain.{GameState, PawnMove, ValidateMove}
 import io.circe.syntax.EncoderOps
-import multiplayer.MultiplayerCodecs.multiplayerStateEncoder
+import multiPlayer.MultiPlayerCodecs.multiplayerStateEncoder
 
 object MultiplayerState {
   // Default constructor

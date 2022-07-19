@@ -1,4 +1,4 @@
-package singleplayer
+package singlePlayer
 
 import cats.effect.IO
 import checkers.CheckersCodecs.gameStateEncoder

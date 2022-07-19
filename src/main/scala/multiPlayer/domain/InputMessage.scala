@@ -1,6 +1,6 @@
-package multiplayer.domain
+package multiPlayer.domain
 
-import multiplayer.domain.WebsocketRoutes.ChatRoute
+import multiPlayer.domain.WebsocketRoutes.ChatRoute
 
 sealed trait InputMessage {
   val player: Player

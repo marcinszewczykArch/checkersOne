@@ -1,4 +1,4 @@
-package multiplayer.domain
+package multiPlayer.domain
 
 trait OutputMessage {
   def forPlayer(targetPlayer: Player): Boolean

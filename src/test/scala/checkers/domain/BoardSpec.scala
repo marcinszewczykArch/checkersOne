@@ -8,13 +8,13 @@ import org.scalatest.matchers.should
 class BoardSpec extends AnyFlatSpec with should.Matchers {
 
   "Initial board" should "work" in {
-    assert(TestData.initialBoard equals Board.initial)
+    assert(initialBoard equals Board.initial)
   }
   "Initial board toString" should "work" in {
-    assert(TestData.initialBoardString equals Board.initial.toString)
+    assert(initialBoardString equals Board.initial.toString)
   }
   "Initial board fromString" should "work" in {
-    assert(Board.fromString(TestData.initialBoardString).get equals Board.initial)
+    assert(Board.fromString(initialBoardString).get equals Board.initial)
   }
   "PawnPosition01" should "give red pawn" in {
     assert(Board.initial.pawnAt(PawnPosition(0, 1)) contains Pawn(Red, Regular, PawnPosition(0, 1)))
@@ -34,10 +34,6 @@ class BoardSpec extends AnyFlatSpec with should.Matchers {
   "PawnPosition34" should "be not available" in {
     assert(Board.initial.positionIsAvailable(PawnPosition(3, 4)) == true)
   }
-
-}
-
-object TestData {
 
   val initialBoard               = new Board(
     List(
@@ -81,5 +77,4 @@ object TestData {
       .replace(" ", "")
       .replace("\n", "")
       .replace("\r", "")
-
 }

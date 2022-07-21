@@ -1,5 +1,6 @@
 package checkers.domain
 
+import checkers.domain.Side.{Red, White}
 import enumeratum._
 
 sealed abstract class GameStatus(val tag: String) extends EnumEntry
@@ -14,6 +15,12 @@ object GameStatus extends Enum[GameStatus] {
       case WinWhite.tag => Some(WinWhite)
       case Draw.tag     => Some(Draw)
       case _            => None
+    }
+
+  def setWinner(side: Side): GameStatus =
+    side match {
+      case White => WinWhite
+      case Red   => WinRed
     }
 
   case object Ongoing  extends GameStatus("ongoing")

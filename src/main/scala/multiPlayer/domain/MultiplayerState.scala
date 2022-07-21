@@ -82,7 +82,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       case Some(room) =>
         val newRooms: List[Room]       = excludePlayerFromRoom(player, room)
         val newState: MultiplayerState =
-          MultiplayerState(players, newRooms) //replace room in state //replace room in state
+          MultiplayerState(players, newRooms) //replace room in state
 
         val message: Seq[OutputMessage] =
           sendToRoom(room, WebsocketRoutes.ChatRoute, s"${player.name} has left room").concat(sendStateToAll(newState))

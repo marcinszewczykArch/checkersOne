@@ -10,7 +10,7 @@ object MultiPlayerCodecs {
   implicit val playerEncoder: Encoder[Player] = { player =>
     Json.fromString(player.name)
   }
-  implicit val roomEncoder: Encoder[Room] = semiauto.deriveEncoder[Room]
+  implicit val roomEncoder: Encoder[Room]                         = semiauto.deriveEncoder[Room]
   implicit val multiplayerStateEncoder: Encoder[MultiplayerState] = semiauto.deriveEncoder[MultiplayerState]
 
 }

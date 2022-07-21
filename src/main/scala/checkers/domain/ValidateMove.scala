@@ -104,9 +104,11 @@ object ValidateMove {
       ): ErrorOr[GameState] =
         moveType match {
           case Single    =>
+            val boardAfterMove = getBoardAfterMove(gameState, move)
+
             Right(
               GameState(
-                status = GameStatus.Ongoing,
+                status = checkNewStatus(boardAfterMove, gameState.movesNow, Single),
                 movesNow = gameState.movesNow.opposite,
                 board = getBoardAfterMove(gameState, move).promoteForQueen(),
                 nextMoveBy = None
@@ -115,11 +117,12 @@ object ValidateMove {
 
           case WithSmash =>
             val isNextToSmash  = checkNextToSmash(gameState, move)
+            val nextMoveType   = if (isNextToSmash) WithSmash else Single
             val boardAfterMove = getBoardAfterMove(gameState, move)
 
             Right(
               GameState(
-                status = checkNewStatus(boardAfterMove),
+                status = checkNewStatus(boardAfterMove, gameState.movesNow, nextMoveType),
                 movesNow = if (isNextToSmash) gameState.movesNow else gameState.movesNow.opposite,
                 board = if (isNextToSmash) boardAfterMove else boardAfterMove.promoteForQueen(),
                 nextMoveBy = if (isNextToSmash) boardAfterMove.pawnAt(move.to) else None
@@ -248,16 +251,47 @@ object ValidateMove {
         isSthToSmash(newState)
       }
 
-      private def checkNewStatus(boardAfterMove: Board): GameStatus =
-        //todo: check if nextColour is not blocked - if it is, its over!
-        if (!boardAfterMove.pawnsList.exists(_.side == White))
-          GameStatus.WinRed
-        else if (!boardAfterMove.pawnsList.exists(_.side == Red))
-          GameStatus.WinWhite
-        //    else if (15 moves with queen without smashing) todo: add this condition
-        //      GameStatus.Draw
-        else
-          GameStatus.Ongoing
+      //todo: add tests
+      private def isBlocked(board: Board, side: Side): Boolean = {
+        val tempState = GameState(status = GameStatus.Ongoing, movesNow = side, board = board, nextMoveBy = None)
 
+        if (isSthToSmash(tempState))
+          false //player has sth to smash, so it is not blocked
+        else { //nothing to smash - check if it is possible to move
+          val availablePositions =
+            for {
+              pawn    <- board.pawnsList.filter(_.side == side)
+              delta   <- List(-1, 1)
+              position = if (pawn.pawnType == Queen)
+                           PawnPosition(pawn.position.x + delta, pawn.position.y + delta)
+                         else if (pawn.side == White)
+                           PawnPosition(pawn.position.x - 1, pawn.position.y + delta)
+                         else
+                           PawnPosition(pawn.position.x + 1, pawn.position.y + delta)
+              if board.positionIsAvailable(position) == true
+            } yield position
+
+          availablePositions.isEmpty //no available positions to move, player is blocked
+        }
+      }
+
+      private def checkNewStatus(
+        boardAfterMove: Board,
+        movesNow: Side,
+        nextMoveType: PawnMoveType
+      ): GameStatus =
+        nextMoveType match {
+          case Single    =>
+            if (isBlocked(boardAfterMove, movesNow.opposite))
+              GameStatus.setWinner(movesNow)
+            else
+              GameStatus.Ongoing
+
+          case WithSmash =>
+            if (!boardAfterMove.pawnsList.exists(_.side == movesNow.opposite))
+              GameStatus.setWinner(movesNow)
+            else
+              GameStatus.Ongoing
+        }
     }
 }

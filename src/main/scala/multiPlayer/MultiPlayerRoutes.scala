@@ -14,10 +14,10 @@ import org.http4s.websocket.WebSocketFrame.{Close, Text}
 object MultiPlayerRoutes {
 
   def multiPlayerRoutes(
-                         state: Ref[IO, MultiplayerState],
-                         queue: Queue[IO, InputMessage],
-                         topic: Topic[IO, OutputMessage]
-                       ): HttpRoutes[IO] =
+    state: Ref[IO, MultiplayerState],
+    queue: Queue[IO, InputMessage],
+    topic: Topic[IO, OutputMessage]
+  ): HttpRoutes[IO] =
     HttpRoutes.of[IO] {
 
       case GET -> Root / "ws" / playerName =>

@@ -19,7 +19,6 @@ case class MakeMove(
 )                                                      extends InputMessage
 
 object InputMessage {
-  //todo: do it with startWith like in angular
   def parse(player: Player, inputText: String): InputMessage = {
     val text = inputText.replaceAll("\"", "") //todo: solve this issue in Angular, this is only on the frontend
     splitWords(text) match {

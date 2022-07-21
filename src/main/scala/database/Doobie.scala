@@ -1,5 +1,7 @@
 package database
 
+import cats.data.NonEmptyList.ZipNonEmptyList.catsDataCommutativeApplyForZipNonEmptyList.*>
+import cats.implicits.catsSyntaxApply
 import checkers.domain.{Board, GameStatus, Side}
 import database.DbTransactor.transactor
 import doobie.implicits._
@@ -47,9 +49,9 @@ object Doobie {
             VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy)
             """
 
-    dropGameStateTable.update.run.transact(transactor) *>
-      createGameStateTable.update.run.transact(transactor) *>
-      insertInitialState.update.run.transact(transactor)
-  }
+    dropGameStateTable.update.run *>
+      createGameStateTable.update.run *>
+      insertInitialState.update.run
+  }.transact(transactor)
 
 }

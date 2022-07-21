@@ -2,12 +2,13 @@ name := "checkersOne"
 version := "0.1"
 scalaVersion := "2.13.8"
 
-val http4sVersion    = "0.21.22" //"0.23.12" <- no Queue in this version
+val http4sVersion    = "0.21.22" //"0.23.12" <- Queue from cats-effect-std
 val CirceVersion     = "0.14.0-M5"
 val Specs2Version    = "4.8.0"
 val LogbackVersion   = "1.2.3"
 val scalaTestVersion = "3.2.7.0"
-val doobieVersion    = "0.13.4"
+val doobieVersion    = "0.13.4"  //"1.0.0-RC1"
+val catsVersion      = "3.3.14"
 
 enablePlugins(JavaAppPackaging)
 
@@ -16,6 +17,7 @@ libraryDependencies ++= Seq(
   "org.http4s"        %% "http4s-circe"         % http4sVersion,
   "org.http4s"        %% "http4s-dsl"           % http4sVersion,
   "org.http4s"        %% "http4s-blaze-client"  % http4sVersion,
+  "org.http4s"        %% "http4s-core"          % http4sVersion,
   //  "org.http4s"          %% "http4s-jdk-http-client" % "0.3.6",
   "org.scalactic"     %% "scalactic"            % "3.2.12",
   "org.scalatest"     %% "scalatest"            % "3.2.12"         % "test",
@@ -31,6 +33,7 @@ libraryDependencies ++= Seq(
   "org.tpolecat"      %% "doobie-core"          % doobieVersion,
   "org.tpolecat"      %% "doobie-postgres"      % doobieVersion,
   "org.tpolecat"      %% "doobie-scalatest"     % doobieVersion    % Test
-
-  //  "org.typelevel"       %% "cats-effect"            % "3.3.14"  //<- http4sVersion "0.23.12" required
+//  "org.typelevel"     %% "cats-effect"          % catsVersion,
+//  "org.typelevel"     %% "cats-effect-kernel"   % catsVersion,
+//  "org.typelevel"     %% "cats-effect-std"      % catsVersion
 )

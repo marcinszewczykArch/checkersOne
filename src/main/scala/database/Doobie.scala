@@ -1,6 +1,5 @@
 package database
 
-import cats.data.NonEmptyList.ZipNonEmptyList.catsDataCommutativeApplyForZipNonEmptyList.*>
 import cats.implicits.catsSyntaxApply
 import checkers.domain.{Board, GameStatus, Side}
 import database.DbTransactor.transactor
@@ -29,11 +28,13 @@ object Doobie {
     val createGameStateTable =
       sql"""
          CREATE table game_state(
-             timestamp VARCHAR(40),
+             timestamp VARCHAR(23),
              status VARCHAR(23), 
              movesNow VARCHAR(1), 
-             board VARCHAR(50),
-             nextMoveBy VARCHAR(10))
+             board VARCHAR(32),
+             nextMoveBy VARCHAR(2),
+             saveName VARCHAR(80)                  
+             )
              """
 
     val timestamp  = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss:SSS").format(LocalDateTime.now)
@@ -41,17 +42,28 @@ object Doobie {
     val movesNow   = Side.White.tag
     val board      = Board.initial.toString
     val nextMoveBy = ""
+    val saveName   = "initial state"
 
     val insertInitialState =
       sql"""
         INSERT INTO
-            game_state (timestamp, status, movesNow, board, nextMoveBy)
-            VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy)
+            game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
+            VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy, $saveName)
+            """
+
+    val boardAllQueen              = "RRRRRRRRRRRRooooooooWWWWWWWWWWWW"
+    val saveNameAllQueen           = "initial state all Queen"
+    val insertInitialStateAllQueen =
+      sql"""
+        INSERT INTO
+            game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
+            VALUES ($timestamp, $status, $movesNow, $boardAllQueen, $nextMoveBy, $saveNameAllQueen)
             """
 
     dropGameStateTable.update.run *>
       createGameStateTable.update.run *>
-      insertInitialState.update.run
+      insertInitialState.update.run *>
+      insertInitialStateAllQueen.update.run
   }.transact(transactor)
 
 }

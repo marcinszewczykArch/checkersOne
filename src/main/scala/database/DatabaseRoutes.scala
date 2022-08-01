@@ -17,14 +17,15 @@ import java.time.format.DateTimeFormatter
 object DatabaseRoutes {
 
   implicit val decodeGameState: EntityDecoder[IO, GameState] = jsonOf[IO, GameState]
-  val databaseRoutes: HttpRoutes[IO] = HttpRoutes.of[IO] {
+  val databaseRoutes: HttpRoutes[IO]                         = HttpRoutes.of[IO] {
 
     case GET -> Root / "state"        =>
-      val gameStates: List[GameStateTo] = sql"select timestamp, status, movesNow, board, nextMoveBy from game_state"
-        .query[GameStateTo]
-        .to[List]
-        .transact(transactor)
-        .unsafeRunSync()
+      val gameStates: List[GameStateTo] =
+        sql"select timestamp, status, movesNow, board, nextMoveBy, saveName from game_state"
+          .query[GameStateTo]
+          .to[List]
+          .transact(transactor)
+          .unsafeRunSync()
 
       Ok(gameStates)
 
@@ -32,20 +33,30 @@ object DatabaseRoutes {
       implicit val decodeGameStateTo: EntityDecoder[IO, GameStateTo] = jsonOf[IO, GameStateTo]
       implicit val encodeGameStateTo: EntityEncoder[IO, GameStateTo] = jsonEncoderOf[IO, GameStateTo]
 
-      req.as[GameStateTo].flatMap { gameState =>
+      req.as[GameStateTo].flatMap { gameState: GameStateTo =>
         val timestamp  = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss:SSS").format(LocalDateTime.now)
         val status     = gameState.status
         val movesNow   = gameState.movesNow
         val board      = gameState.board
         val nextMoveBy = gameState.nextMoveBy
+        val saveName   = gameState.saveName
 
         sql"""
           INSERT INTO
-              game_state (timestamp, status, movesNow, board, nextMoveBy)
-          VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy)
+              game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
+          VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy, $saveName)
           """.update.run.transact(transactor).unsafeRunSync()
 
-        Ok(GameStateTo(timestamp, status, movesNow, board, nextMoveBy))
+        Ok(
+          GameStateTo(
+            timestamp,
+            status,
+            movesNow,
+            board,
+            nextMoveBy,
+            saveName
+          )
+        )
       }
 
   }
@@ -59,11 +70,7 @@ object DatabaseRoutes {
     status: String,
     movesNow: String,
     board: String,
-    nextMoveBy: String
+    nextMoveBy: String,
+    saveName: String
   )
-  //todo: add:
-  //playerWhite: String,
-  //playerRed: String
-  //room: String
-
 }

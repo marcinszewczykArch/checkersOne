@@ -1,6 +1,7 @@
 package checkers.domain
 
 import checkers.domain.MoveValidationError.{MoveIsNotDiagonal, WrongPawnColor}
+import checkers.domain.PawnType.{Queen, Regular}
 import checkers.domain.Side.{Red, White}
 import org.scalatest.Assertion
 import org.scalatest.flatspec.AnyFlatSpec
@@ -11,10 +12,9 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
   //Left(error)
   "Not diagonal single pawn move" should "return Left(MoveIsNotDiagonal)" in {
     val nextMoveBy = None
-    val status = GameStatus.Ongoing
-    val movesNow = White
-    val board = toBoard(
-      s"""
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
         r r r r
        r r r r
         r r r r
@@ -24,17 +24,16 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w w w w
        w w w w
     """)
-    val gameState = GameState(status, movesNow, board, nextMoveBy)
-    val pawnMove = PawnMove.fromString("23", "17").get
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
+    val pawnMove   = PawnMove.fromString("23", "17").get
     ValidateMove.apply().apply(pawnMove, gameState) shouldEqual Left(MoveIsNotDiagonal)
   }
 
   "Initial game state with correct move pattern by red pawn" should "return Left(WrongPawnColor)" in {
     val nextMoveBy = None
-    val status = GameStatus.Ongoing
-    val movesNow = White
-    val board = toBoard(
-      s"""
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
         r r r r
        r r r r
         r r r r
@@ -44,8 +43,8 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w w w w
        w w w w
     """)
-    val gameState = GameState(status, movesNow, board, nextMoveBy)
-    val pawnMove = PawnMove.fromString("11", "15").get
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
+    val pawnMove   = PawnMove.fromString("11", "15").get
     ValidateMove.apply().apply(pawnMove, gameState) shouldEqual Left(WrongPawnColor)
   }
 
@@ -67,21 +66,18 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
 
   "Queen single move while smashing is possible" should "return Left(MoveTypeIsIncorrect)" in {}
 
-  "Red regular pawn move backward" should "return Left(???)" in {}
+  "Red regular pawn move backward" should "return Left(Illegal move)" in {}
 
-  "White regular pawn move backward" should "return Left(???)" in {}
-
-  //todo: check all potential move errors
+  "White regular pawn move backward" should "return Left(Illegal move)" in {}
 
 
   //Right(state)
   "Initial game state with correct move pattern by white pawn" should "give correct state" in {
     //initial state
     val nextMoveBy = None
-    val status = GameStatus.Ongoing
-    val movesNow = White
-    val board = toBoard(
-      s"""
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
         r r r r
        r r r r
         r r r r
@@ -91,17 +87,16 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w w w w
        w w w w
     """)
-    val gameState = GameState(status, movesNow, board, nextMoveBy)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
 
     //move
     val pawnMove = PawnMove.fromString("23", "19").get
 
     //expected state
     val expectedNextMoveBy = None
-    val expectedStatus = GameStatus.Ongoing
-    val expectedMovesNow = Red
-    val expectedBoard = toBoard(
-      s"""
+    val expectedStatus     = GameStatus.Ongoing
+    val expectedMovesNow   = Red
+    val expectedBoard      = toBoard(s"""
         r r r r
        r r r r
         r r r r
@@ -111,22 +106,21 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w w w w
        w w w w
     """)
-    val expectedGameState = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
 
     //Assertion
     ValidateMove.apply().apply(pawnMove, gameState) match {
       case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
-      case Left(error: MoveValidationError) => assert(Right == Left(error))
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
     }
   }
 
   "Move with single smash" should "give correct state" in {
     //initial state
     val nextMoveBy = None
-    val status = GameStatus.Ongoing
-    val movesNow = White
-    val board = toBoard(
-      s"""
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
         r o o r
        o o o o
         o r o o
@@ -136,17 +130,16 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w o o o
        o o o o
     """)
-    val gameState = GameState(status, movesNow, board, nextMoveBy)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
 
     //move
     val pawnMove = PawnMove.fromString("13", "6").get
 
     //expected state
     val expectedNextMoveBy = None
-    val expectedStatus = GameStatus.Ongoing
-    val expectedMovesNow = Red
-    val expectedBoard = toBoard(
-      s"""
+    val expectedStatus     = GameStatus.Ongoing
+    val expectedMovesNow   = Red
+    val expectedBoard      = toBoard(s"""
         r o o r
        o o w o
         o o o o
@@ -156,29 +149,333 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w o o o
        o o o o
     """)
-    val expectedGameState = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
 
     //Assertion
     ValidateMove.apply().apply(pawnMove, gameState) match {
       case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
-      case Left(error: MoveValidationError) => assert(Right == Left(error))
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
     }
   }
 
-  "Move with multiple smash" should "give correct state" in {}
+  "Move with multiple smash" should "give correct state" in {
+    //initial state
+    val nextMoveBy = None
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
+        r o o r
+       o o o o
+        o r r o
+       o w o o
+        o o o o
+       o o o o
+        w o o o
+       o o o o
+    """)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
 
-  "Ongoing smashing" should "not give a queen" in {}
+    //move
+    val pawnMove = PawnMove.fromString("13", "6").get
 
-  "Pawn getting to the board end" should "be promoted to a queen" in {}
+    //expected state
+    val expectedNextMoveBy = Some(
+      Pawn(
+        side = White,
+        pawnType = Regular,
+        position = PawnPosition(1, 4)
+      )
+    )
+    val expectedStatus     = GameStatus.Ongoing
+    val expectedMovesNow   = White
+    val expectedBoard      = toBoard(s"""
+        r o o r
+       o o w o
+        o o r o
+       o o o o
+        o o o o
+       o o o o
+        w o o o
+       o o o o
+    """)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
 
-  "Smashing last opponent pawn" should "give new state with win-status" in {}
+    //Assertion
+    ValidateMove.apply().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
 
-  "Blocking all opponent pawns" should "give new state with win-status" in {}
+  "Ongoing smashing" should "not give a queen" in {
+    //initial state
+    val nextMoveBy = None
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
+        r o o r
+       o r r o
+        w o o o
+       o w o o
+        o o o o
+       o o o o
+        w o o o
+       o o o o
+    """)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
 
-  "Queen with single smash" should "give correct state" in {}
+    //move
+    val pawnMove = PawnMove.fromString("8", "1").get
 
-  "Queen with multiple smash" should "give correct state" in {}
+    //expected state
+    val expectedNextMoveBy = Some(
+      Pawn(
+        side = White,
+        pawnType = Regular,
+        position = PawnPosition(0, 3)
+      )
+    )
+    val expectedStatus     = GameStatus.Ongoing
+    val expectedMovesNow   = White
+    val expectedBoard      = toBoard(s"""
+        r w o r
+       o o r o
+        o o o o
+       o w o o
+        o o o o
+       o o o o
+        w o o o
+       o o o o
+    """)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
 
+    //Assertion
+    ValidateMove.apply().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
+
+  "Pawn getting to the board end" should "be promoted to a queen" in {
+    //initial state
+    val nextMoveBy = None
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
+        r o o r
+       o r o o
+        w o o o
+       o w o o
+        o o o o
+       o o o o
+        w o o o
+       o o o o
+    """)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
+
+    //move
+    val pawnMove = PawnMove.fromString("8", "1").get
+
+    //expected state
+    val expectedNextMoveBy = None
+    val expectedStatus     = GameStatus.Ongoing
+    val expectedMovesNow   = Red
+    val expectedBoard      = toBoard(s"""
+        r W o r
+       o o o o
+        o o o o
+       o w o o
+        o o o o
+       o o o o
+        w o o o
+       o o o o
+    """)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+
+    //Assertion
+    ValidateMove.apply().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
+
+  "Smashing last opponent pawn" should "give new state with win-status" in {
+    //initial state
+    val nextMoveBy = None
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
+        o o o o
+       o o o o
+        o r o o
+       o w o o
+        o o o o
+       o o o o
+        w o w o
+       o o o o
+    """)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
+
+    //move
+    val pawnMove = PawnMove.fromString("13", "6").get
+
+    //expected state
+    val expectedNextMoveBy = None
+    val expectedStatus     = GameStatus.WinWhite
+    val expectedMovesNow   = Red
+    val expectedBoard      = toBoard(s"""
+        o o o o
+       o o w o
+        o o o o
+       o o o o
+        o o o o
+       o o o o
+        w o w o
+       o o o o
+    """)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+
+    //Assertion
+    ValidateMove.apply().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
+
+  "Blocking all opponent pawns" should "give new state with win-status" in {
+    //initial state
+    val nextMoveBy = None
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
+        o o o o
+       o o o o
+        o o o r
+       o o o o
+        o o w w
+       o o o o
+        o o o o
+       o o o o
+    """)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
+
+    //move
+    val pawnMove = PawnMove.fromString("19", "15").get
+
+    //expected state
+    val expectedNextMoveBy = None
+    val expectedStatus     = GameStatus.WinWhite
+    val expectedMovesNow   = Red
+    val expectedBoard      = toBoard(s"""
+        o o o o
+       o o o o
+        o o o r
+       o o o w
+        o o w o
+       o o o o
+        o o o o
+       o o o o
+    """)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+
+    //Assertion
+    ValidateMove.apply().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
+
+  "Queen with single smash" should "give correct state" in {
+    //initial state
+    val nextMoveBy = None
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
+        W o o o
+       o o o o
+        o r o r
+       o o o o
+        o o o w
+       o o o o
+        o o o o
+       o o o o
+    """)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
+
+    //move
+    val pawnMove = PawnMove.fromString("0", "23").get
+
+    //expected state
+    val expectedNextMoveBy = None
+    val expectedStatus     = GameStatus.Ongoing
+    val expectedMovesNow   = Red
+    val expectedBoard      = toBoard(s"""
+        o o o o
+       o o o o
+        o o o r
+       o o o o
+        o o o w
+       o o o W
+        o o o o
+       o o o o
+    """)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+
+    //Assertion
+    ValidateMove.apply().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
+
+  "Queen with multiple smash" should "give correct state" in {
+    //initial state
+    val nextMoveBy = None
+    val status     = GameStatus.Ongoing
+    val movesNow   = White
+    val board      = toBoard(s"""
+        W o o o
+       o o o o
+        o r o r
+       o o o o
+        o o o w
+       o o o o
+        o o r o
+       o o o o
+    """)
+    val gameState  = GameState(status, movesNow, board, nextMoveBy)
+
+    //move
+    val pawnMove = PawnMove.fromString("0", "23").get
+
+    //expected state
+    val expectedNextMoveBy = Some(
+      Pawn(
+        side = White,
+        pawnType = Queen,
+        position = PawnPosition(5, 6)
+      )
+    )
+    val expectedStatus     = GameStatus.Ongoing
+    val expectedMovesNow   = White
+    val expectedBoard      = toBoard(s"""
+        o o o o
+       o o o o
+        o o o r
+       o o o o
+        o o o w
+       o o o W
+        o o r o
+       o o o o
+    """)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+
+    //Assertion
+    ValidateMove.apply().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
 
   //helpers
   val toBoard: String => Board = { s =>
@@ -196,7 +493,6 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
     assert(actual.nextMoveBy == expected.nextMoveBy)
     assert(actual.status == expected.status)
     assert(actual.movesNow == expected.movesNow)
-    assert(actual.board.toString == expected.board.toString)
-    //comparing strings, because order of List[Pawn] inside Board object may differ
+    assert(actual.board.pawnsList.toSet == expected.board.pawnsList.toSet) //comparing pawnsList.toSet, because order of List[Pawn] inside Board object may differ
   }
 }

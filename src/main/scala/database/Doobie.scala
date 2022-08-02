@@ -20,11 +20,14 @@ object Doobie {
 //  val result3: IO[List[Int]] = operation3.transact(transactor)
 
   val initialSchema = {
+
+    //drop table
     val dropGameStateTable =
       sql"""
     DROP TABLE IF EXISTS game_state
   """
 
+    //create table
     val createGameStateTable =
       sql"""
          CREATE table game_state(
@@ -37,6 +40,7 @@ object Doobie {
              )
              """
 
+    //insert initial state
     val timestamp  = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss:SSS").format(LocalDateTime.now)
     val status     = GameStatus.Ongoing.tag
     val movesNow   = Side.White.tag
@@ -51,6 +55,7 @@ object Doobie {
             VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy, $saveName)
             """
 
+    //insert initial state all queen
     val boardAllQueen              = "RRRRRRRRRRRRooooooooWWWWWWWWWWWW"
     val saveNameAllQueen           = "initial state all Queen"
     val insertInitialStateAllQueen =
@@ -60,10 +65,45 @@ object Doobie {
             VALUES ($timestamp, $status, $movesNow, $boardAllQueen, $nextMoveBy, $saveNameAllQueen)
             """
 
-    dropGameStateTable.update.run *>
+    //insert state obligatory smashing
+    val boardWithMultipleSmash       = "roorooooorroowoooooooooowooooooo"
+    val saveWithMultipleSmash            = "state with multiple smash"
+    val insertStateWithMultipleSmash =
+      sql"""
+        INSERT INTO
+            game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
+            VALUES ($timestamp, $status, $movesNow, $boardWithMultipleSmash, $nextMoveBy, $saveWithMultipleSmash)
+            """
+
+    //insert state getting queen
+    val boardWithGettingQueen        = "roororoowoooowoooooooooowooooooo"
+    val saveWithGettingQueen            = "state with getting queen"
+    val insertStateWithGettingQueen  =
+      sql"""
+        INSERT INTO
+            game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
+            VALUES ($timestamp, $status, $movesNow, $boardWithGettingQueen, $nextMoveBy, $saveWithGettingQueen)
+            """
+
+    //insert state multiple smashing not getting queen
+    val boardWithNotGettingQueen        = "roororrowoooowoooooooooowooooooo"
+    val saveWithNotGettingQueen            = "state with multiple smashing not getting queen"
+    val insertStateWithNotGettingQueen  =
+      sql"""
+        INSERT INTO
+            game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
+            VALUES ($timestamp, $status, $movesNow, $boardWithNotGettingQueen, $nextMoveBy, $saveWithNotGettingQueen)
+            """
+
+
+      dropGameStateTable.update.run *>
       createGameStateTable.update.run *>
       insertInitialState.update.run *>
-      insertInitialStateAllQueen.update.run
+      insertInitialStateAllQueen.update.run *>
+      insertStateWithGettingQueen.update.run *>
+      insertStateWithNotGettingQueen.update.run *>
+      insertStateWithMultipleSmash.update.run
+
   }.transact(transactor)
 
 }

@@ -6,39 +6,45 @@ import checkers.domain.PawnPosition.{availablePositions, toIndex}
 import checkers.domain.PawnType.Regular
 import checkers.domain.Side.{Red, White}
 
-final case class Board(pawnsList: List[Pawn]) {
+//todo: Pawns wystarczy. Pawns list podchodzi mi pod notację węgierską.
+//todo: Również czy zakładamy sytuację że plansza może by pusta? Jeżeli nie to pomyślałbym o NonEmptyList
+//todo: Jeżeli w ogóle zakładamy że Pawn może okupowa jedno unikalne pole, to pomyślałbym o (NonEmpty)Mapie
+final case class Board(pawns: List[Pawn]) {
 
-  def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty && position.isOnTheBoard
+  def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty
 
-  def pawnAt(position: PawnPosition): Option[Pawn] = pawnsList.find(_.position == position)
+  def pawnAt(position: PawnPosition): Option[Pawn] = pawns.find(_.position == position)
 
   def promoteForQueen(): Board =
-    this.pawnsList
+    pawns
       .filter(_.pawnType == Regular)
-      .find(o => (o.position.x == 0 && o.side == White) || (o.position.x == 7 && o.side == Red))
+      //todo: Opisz magic numbery.
+      .find(o =>
+        (o.position.x == PawnPosition.MIN && o.side == White) || (o.position.x == PawnPosition.MAX && o.side == Red)
+      )
       .map(pawnToPromote =>
         Board(
-          this.pawnsList
+          pawns
             .filterNot(_ == pawnToPromote)
             .appended(Pawn(pawnToPromote.side, PawnType.Queen, pawnToPromote.position))
         )
       )
       .getOrElse(this)
 
+  //todo: Co byś powiedział na zrobienie tego przez Show?
   override def toString: String = {
 
-    val boardArray: List[(Int, PawnType, Side)] =
-      this.pawnsList.map(o => (toIndex(o.position), o.pawnType, o.side))
+    //todo: Zrób z tego mapę. Będzie to bardziej elegancko wyglądac.
+    val boardArray: Map[Int, (PawnType, Side)] =
+      pawns.map(o => (toIndex(o.position), (o.pawnType, o.side))).toMap
 
     availablePositions.indices
       .map(n =>
         boardArray
-          .find(_._1 == n)
-          .map { o: (Int, PawnType, Side) =>
-            if (o._2 == PawnType.Regular)
-              o._3.tag
-            else
-              o._3.tag.toUpperCase()
+          .get(n)
+          .map {
+            case (PawnType.Regular, side) => side.tag
+            case (_, side)                => side.tag.toUpperCase
           }
           .getOrElse(EMPTY_POSITION)
       )

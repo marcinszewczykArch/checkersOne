@@ -6,8 +6,9 @@ import io.circe.syntax.EncoderOps
 import multiPlayer.MultiPlayerCodecs.multiplayerStateEncoder
 
 object MultiplayerState {
-  // Default constructor
-  def apply(): MultiplayerState = MultiplayerState(List.empty, List.empty)
+
+ val initial: MultiplayerState = MultiplayerState(List.empty, List.empty)
+
 }
 
 case class MultiplayerState(players: List[Player], rooms: List[Room]) {

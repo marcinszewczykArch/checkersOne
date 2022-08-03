@@ -7,7 +7,7 @@ final case class GameState(
   movesNow: Side,
   board: Board,
   nextMoveBy: Option[Pawn] = None
-) {}
+)
 
 object GameState {
   def initial: GameState =
@@ -36,7 +36,7 @@ object GameState {
     for {
       movesNow   <- Side.fromString(movesNow)
       board      <- Board.fromString(board)
-      gameStatus <- GameStatus.fromString(status)
+      gameStatus <- GameStatus.withValueOpt(status.toLowerCase)
     } yield GameState(gameStatus, movesNow, board, nextMoveByOption)
 
   }

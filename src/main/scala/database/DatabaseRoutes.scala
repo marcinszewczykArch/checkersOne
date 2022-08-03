@@ -14,20 +14,22 @@ import org.http4s.{EntityDecoder, EntityEncoder, HttpRoutes}
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+//todo: Teraz jest okej, ale w następnej iteracji fajnie byłoby nie miec
+//todo: HTTP API jako bezpośredni wrapper na bazę danych.
 object DatabaseRoutes {
 
   implicit val decodeGameState: EntityDecoder[IO, GameState] = jsonOf[IO, GameState]
   val databaseRoutes: HttpRoutes[IO]                         = HttpRoutes.of[IO] {
 
     case GET -> Root / "state"        =>
-      val gameStates: List[GameStateTo] =
+//      val gameStates: List[GameStateTo] =
         sql"select timestamp, status, movesNow, board, nextMoveBy, saveName from game_state"
           .query[GameStateTo]
           .to[List]
           .transact(transactor)
-          .unsafeRunSync()
-
-      Ok(gameStates)
+          .flatMap(Ok(_))
+//          .unsafeRunSync()
+//      Ok(gameStates)
 
     case req @ POST -> Root / "state" =>
       implicit val decodeGameStateTo: EntityDecoder[IO, GameStateTo] = jsonOf[IO, GameStateTo]
@@ -45,7 +47,7 @@ object DatabaseRoutes {
           INSERT INTO
               game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
           VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy, $saveName)
-          """.update.run.transact(transactor).unsafeRunSync()
+          """.update.run.transact(transactor).unsafeRunSync() //todo: jak wyżej.
 
         Ok(
           GameStateTo(

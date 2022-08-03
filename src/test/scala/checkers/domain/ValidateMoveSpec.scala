@@ -183,7 +183,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
       Pawn(
         side = White,
         pawnType = Regular,
-        position = PawnPosition(1, 4)
+        position = PawnPosition(1, 4).get
       )
     )
     val expectedStatus     = GameStatus.Ongoing
@@ -232,7 +232,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
       Pawn(
         side = White,
         pawnType = Regular,
-        position = PawnPosition(0, 3)
+        position = PawnPosition(0, 3).get
       )
     )
     val expectedStatus     = GameStatus.Ongoing
@@ -453,7 +453,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
       Pawn(
         side = White,
         pawnType = Queen,
-        position = PawnPosition(5, 6)
+        position = PawnPosition(5, 6).get
       )
     )
     val expectedStatus     = GameStatus.Ongoing
@@ -493,6 +493,6 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
     assert(actual.nextMoveBy == expected.nextMoveBy)
     assert(actual.status == expected.status)
     assert(actual.movesNow == expected.movesNow)
-    assert(actual.board.pawnsList.toSet == expected.board.pawnsList.toSet) //comparing pawnsList.toSet, because order of List[Pawn] inside Board object may differ
+    assert(actual.board.pawns.toSet == expected.board.pawns.toSet) //comparing pawnsList.toSet, because order of List[Pawn] inside Board object may differ
   }
 }

@@ -13,6 +13,8 @@ import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
 import singlePlayer.SinglePlayerRoutes
+import scala.concurrent.duration._
+import io.circe.syntax.EncoderOps
 
 import scala.concurrent.ExecutionContext
 
@@ -40,8 +42,15 @@ object Server {
           .flatMap(Stream.emits)
           .through(topic.publish)
 
+        // Stream to keep alive idle WebSockets
+        import multiPlayer.MultiPlayerCodecs.multiplayerStateEncoder
+        val keepAlive = Stream
+          .awakeEvery[IO](5.seconds)
+          .map(_ => KeepAlive(WebsocketRoutes.StateRoute, ref.get.unsafeRunSync().asJson.toString()))
+          .through(topic.publish)
+
         // fs2 Streams must be "pulled" to process messages. Drain will perpetually pull our top-level streams
-        Stream(httpStream, processingStream).parJoinUnbounded.compile.drain
+        Stream(httpStream, processingStream, keepAlive).parJoinUnbounded.compile.drain
           .as(ExitCode.Success)
       }
     } yield exitCode

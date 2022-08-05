@@ -42,14 +42,12 @@ object Server {
           .flatMap(Stream.emits)
           .through(topic.publish)
 
-        // Stream to keep alive idle WebSockets
-        import multiPlayer.MultiPlayerCodecs.multiplayerStateEncoder
+        // Stream to keep alive idle WebSockets by sending current state to all players every 5 seconds
         val keepAlive = Stream
           .awakeEvery[IO](5.seconds)
-          .map(_ => KeepAlive(WebsocketRoutes.StateRoute, ref.get.unsafeRunSync().asJson.toString()))
+          .map(_ => KeepAlive(ref.get.unsafeRunSync()))
           .through(topic.publish)
 
-        // fs2 Streams must be "pulled" to process messages. Drain will perpetually pull our top-level streams
         Stream(httpStream, processingStream, keepAlive).parJoinUnbounded.compile.drain
           .as(ExitCode.Success)
       }

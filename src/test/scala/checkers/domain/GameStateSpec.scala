@@ -48,7 +48,7 @@ class GameStateSpec extends AnyFlatSpec with should.Matchers {
       movesNow = "w",
       nextMoveBy = "33",
       status = "ongoing"
-    ).get.nextMoveBy.isEmpty shouldEqual true
+    ).get.nextMoveFrom.isEmpty shouldEqual true
   }
 
   "Game state with invalid status" should "not be valid" in {

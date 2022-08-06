@@ -15,7 +15,7 @@ object CheckersCodecs {
   implicit val pawnTypeEncoder: Encoder[PawnType] = deriveEncoder[PawnType]
   implicit val pawnTypeDecoder: Decoder[PawnType] = Decoder.decodeString.emap(PawnType.fromString(_).toRight("Invalid PawnType"))
 
-  implicit val pawnEncoder: Encoder[Pawn] = Encoder.instance {pawn => Json.fromInt(PawnPosition.availablePositions.indexOf(pawn.position))}
+  implicit val pawnEncoder: Encoder[Pawn] = deriveEncoder[Pawn]
   implicit val pawnDecoder: Decoder[Pawn] = deriveDecoder[Pawn]
 
   implicit val sideStatusEncoder: Encoder[Side] = Encoder.instance { side => Json.fromString(side.tag) }

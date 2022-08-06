@@ -16,11 +16,24 @@ class BoardSpec extends AnyFlatSpec with should.Matchers {
   "Initial board fromString" should "work" in {
     assert(Board.fromString(initialBoardString).get equals Board.initial)
   }
+
+  "Invalid string with correct length" should "not get Board" in {
+    assert(Board.fromString("rrrrrrrrrrrroooXoooowwwwwwwwwwww").isEmpty)
+  }
+
+  "Correct string" should "get Board" in {
+    assert(Board.fromString("rrrrrrrrrrrroooooooowwwwwwwwwwww").isDefined)
+  }
+
+  "Invalid string" should "not get Board" in {
+    assert(Board.fromString("invalidString").isEmpty)
+  }
+
   "PawnPosition01" should "give red pawn" in {
-    assert(Board.initial.pawnAt(PawnPosition(0, 1).get) contains Pawn(Red, Regular, PawnPosition(0, 1).get))
+    assert(Board.initial.pawnAt(PawnPosition(0, 1).get) contains Pawn(Red, Regular))
   }
   "PawnPosition76" should "give white pawn" in {
-    assert(Board.initial.pawnAt(PawnPosition(7, 6).get) contains Pawn(White, Regular, PawnPosition(7, 6).get))
+    assert(Board.initial.pawnAt(PawnPosition(7, 6).get) contains Pawn(White, Regular))
   }
   "PawnPosition34" should "be empty" in {
     assert(Board.initial.pawnAt(PawnPosition(3, 4).get).isEmpty)
@@ -33,31 +46,31 @@ class BoardSpec extends AnyFlatSpec with should.Matchers {
   }
 
   val initialBoard               = new Board(
-    List(
-      Pawn(Red, Regular, PawnPosition(0, 1).get),
-      Pawn(Red, Regular, PawnPosition(0, 3).get),
-      Pawn(Red, Regular, PawnPosition(0, 5).get),
-      Pawn(Red, Regular, PawnPosition(0, 7).get),
-      Pawn(Red, Regular, PawnPosition(1, 0).get),
-      Pawn(Red, Regular, PawnPosition(1, 2).get),
-      Pawn(Red, Regular, PawnPosition(1, 4).get),
-      Pawn(Red, Regular, PawnPosition(1, 6).get),
-      Pawn(Red, Regular, PawnPosition(2, 1).get),
-      Pawn(Red, Regular, PawnPosition(2, 3).get),
-      Pawn(Red, Regular, PawnPosition(2, 5).get),
-      Pawn(Red, Regular, PawnPosition(2, 7).get),
-      Pawn(White, Regular, PawnPosition(5, 0).get),
-      Pawn(White, Regular, PawnPosition(5, 2).get),
-      Pawn(White, Regular, PawnPosition(5, 4).get),
-      Pawn(White, Regular, PawnPosition(5, 6).get),
-      Pawn(White, Regular, PawnPosition(6, 1).get),
-      Pawn(White, Regular, PawnPosition(6, 3).get),
-      Pawn(White, Regular, PawnPosition(6, 5).get),
-      Pawn(White, Regular, PawnPosition(6, 7).get),
-      Pawn(White, Regular, PawnPosition(7, 0).get),
-      Pawn(White, Regular, PawnPosition(7, 2).get),
-      Pawn(White, Regular, PawnPosition(7, 4).get),
-      Pawn(White, Regular, PawnPosition(7, 6).get)
+    Map(
+      PawnPosition(0, 1).get -> Pawn(Red, Regular),
+      PawnPosition(0, 3).get -> Pawn(Red, Regular),
+      PawnPosition(0, 5).get -> Pawn(Red, Regular),
+      PawnPosition(0, 7).get -> Pawn(Red, Regular),
+      PawnPosition(1, 0).get -> Pawn(Red, Regular),
+      PawnPosition(1, 2).get -> Pawn(Red, Regular),
+      PawnPosition(1, 4).get -> Pawn(Red, Regular),
+      PawnPosition(1, 6).get -> Pawn(Red, Regular),
+      PawnPosition(2, 1).get -> Pawn(Red, Regular),
+      PawnPosition(2, 3).get -> Pawn(Red, Regular),
+      PawnPosition(2, 5).get -> Pawn(Red, Regular),
+      PawnPosition(2, 7).get -> Pawn(Red, Regular),
+      PawnPosition(5, 0).get -> Pawn(White, Regular),
+      PawnPosition(5, 2).get -> Pawn(White, Regular),
+      PawnPosition(5, 4).get -> Pawn(White, Regular),
+      PawnPosition(5, 6).get -> Pawn(White, Regular),
+      PawnPosition(6, 1).get -> Pawn(White, Regular),
+      PawnPosition(6, 3).get -> Pawn(White, Regular),
+      PawnPosition(6, 5).get -> Pawn(White, Regular),
+      PawnPosition(6, 7).get -> Pawn(White, Regular),
+      PawnPosition(7, 0).get -> Pawn(White, Regular),
+      PawnPosition(7, 2).get -> Pawn(White, Regular),
+      PawnPosition(7, 4).get -> Pawn(White, Regular),
+      PawnPosition(7, 6).get -> Pawn(White, Regular)
     )
   )
   val initialBoardString: String =

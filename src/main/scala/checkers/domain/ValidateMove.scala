@@ -6,6 +6,8 @@ import checkers.domain.PawnType.{Queen, Regular}
 import checkers.domain.Side._
 import checkers.domain.ValidateMove.ErrorOr
 
+import scala.collection.Map
+
 trait ValidateMove {
   def apply(
     move: PawnMove,
@@ -67,7 +69,7 @@ object ValidateMove {
 
       def pawnIsCorrectIfMultipleSmashingContinues(gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =
         Either.cond(
-          test = gameState.nextMoveBy.isEmpty || gameState.nextMoveBy == gameState.board.pawnAt(move.from),
+          test = gameState.nextMoveFrom.isEmpty || gameState.nextMoveFrom == gameState.board.pawnAt(move.from),
           right = move,
           left = ContinueMultipleSmashing
         )
@@ -111,7 +113,7 @@ object ValidateMove {
                 status = checkNewStatus(boardAfterMove, gameState.movesNow, Single),
                 movesNow = gameState.movesNow.opposite,
                 board = getBoardAfterMove(gameState, move).promoteForQueen(),
-                nextMoveBy = None
+                nextMoveFrom = None
               )
             )
 
@@ -125,7 +127,7 @@ object ValidateMove {
                 status = checkNewStatus(boardAfterMove, gameState.movesNow, nextMoveType),
                 movesNow = if (isNextToSmash) gameState.movesNow else gameState.movesNow.opposite,
                 board = if (isNextToSmash) boardAfterMove else boardAfterMove.promoteForQueen(),
-                nextMoveBy = if (isNextToSmash) boardAfterMove.pawnAt(move.to) else None
+                nextMoveFrom = if (isNextToSmash) Some(move.to) else None
               )
             )
 
@@ -137,51 +139,51 @@ object ValidateMove {
         val opponent = movesNow.opposite
 
         move.from.x - move.to.x match {
-          case 1 if movesNow == White                                             => Right(Single)
-          case -1 if movesNow == Red                                              => Right(Single)
-          case 2 if getPawnsOnTheWay(gameState, move).exists(_.side == opponent)  => Right(WithSmash)
-          case -2 if getPawnsOnTheWay(gameState, move).exists(_.side == opponent) => Right(WithSmash)
-          case _                                                                  => Left(IllegalMove)
+          case 1 if movesNow == White                                                => Right(Single)
+          case -1 if movesNow == Red                                                 => Right(Single)
+          case 2 if getPawnsOnTheWay(gameState, move).exists(_._2.side == opponent)  => Right(WithSmash)
+          case -2 if getPawnsOnTheWay(gameState, move).exists(_._2.side == opponent) => Right(WithSmash)
+          case _                                                                     => Left(IllegalMove)
         }
       }
 
       private def getMoveTypeQueen(gameState: GameState, move: PawnMove): ErrorOr[PawnMoveType] = {
-        val pawnsOnTheWay: List[Pawn] = getPawnsOnTheWay(gameState, move)
+        val pawnsOnTheWay: Map[PawnPosition, Pawn] = getPawnsOnTheWay(gameState, move)
 
         pawnsOnTheWay.size match {
-          case 0                                                           => Right(Single)
-          case 1 if pawnsOnTheWay.head.side == gameState.movesNow.opposite => Right(WithSmash)
-          case 1                                                           => Left(SmashingOwnPawnIsNotOk)
-          case _                                                           => Left(TooManyPawnsOnTheWay)
+          case 0                                                              => Right(Single)
+          case 1 if pawnsOnTheWay.head._2.side == gameState.movesNow.opposite => Right(WithSmash)
+          case 1                                                              => Left(SmashingOwnPawnIsNotOk)
+          case _                                                              => Left(TooManyPawnsOnTheWay)
         }
       }
 
       private def isSthToSmash(gameState: GameState): Boolean = {
 
-        val pawnsToAnalyze: List[Pawn] = gameState.nextMoveBy
-          .map(List(_))
-          .getOrElse(gameState.board.pawns.filter(_.side == gameState.movesNow))
+        val pawnsToAnalyze: Map[PawnPosition, Pawn] = gameState.nextMoveFrom
+          .map(o => Map(o -> gameState.board.pawnAt(o).get)) //todo:  gameState.board.pawnAt(o).get can return None
+          .getOrElse(gameState.board.pawns.filter(_._2.side == gameState.movesNow))
 
         val movesWithSmashForRegular = for {
-          pawn   <- pawnsToAnalyze.filter(_.pawnType == PawnType.Regular)
+          pawn   <- pawnsToAnalyze.filter(_._2.pawnType == PawnType.Regular)
           deltaX <- List(-2, 2)
           deltaY <- List(-2, 2)
 
           delta    = (deltaX, deltaY)
-          moveFrom = pawn.position
-          moveTo   <- PawnPosition.apply(moveFrom.x + delta._1, moveFrom.y + delta._2)
+          moveFrom = pawn._1
+          moveTo  <- PawnPosition.apply(moveFrom.x + delta._1, moveFrom.y + delta._2)
           if gameState.board.positionIsAvailable(moveTo)
           move     = PawnMove(moveFrom, moveTo) if getMoveTypeRegular(gameState, move) == Right(WithSmash)
         } yield move
 
         val movesWithSmashForQueen = for {
-          queen  <- pawnsToAnalyze.filter(_.pawnType == PawnType.Queen)
+          queen  <- pawnsToAnalyze.filter(_._2.pawnType == PawnType.Queen)
           deltaX <- List.range(2, 7).concat(List.range(-7, 2))
           deltaY <- List.range(2, 7).concat(List.range(-7, 2))
 
           delta    = (deltaX, deltaY) if deltaX.abs == deltaY.abs
-          moveFrom = queen.position
-          moveTo   <- PawnPosition(moveFrom.x + delta._1, moveFrom.y + delta._2)
+          moveFrom = queen._1
+          moveTo  <- PawnPosition(moveFrom.x + delta._1, moveFrom.y + delta._2)
           if gameState.board.positionIsAvailable(moveTo)
           move     = PawnMove(moveFrom, moveTo) if getMoveTypeQueen(gameState, move) == Right(WithSmash)
         } yield move
@@ -189,49 +191,53 @@ object ValidateMove {
         (movesWithSmashForRegular ++ movesWithSmashForQueen).nonEmpty
       }
 
-      private def getSmashedPawn(gameState: GameState, move: PawnMove): Option[Pawn] =
+      private def getSmashedPawn(gameState: GameState, move: PawnMove): Option[(PawnPosition, Pawn)] =
         gameState.board.pawnAt(move.from).map(_.pawnType) match {
 
           case Some(Regular) =>
             val x = Array(move.from.x, move.to.x).min + 1
             val y = Array(move.from.y, move.to.y).min + 1
-            PawnPosition(x, y).flatMap(position => gameState.board.pawnAt(position))
+            for {
+              position <- PawnPosition(x, y)
+              pawn     <- gameState.board.pawnAt(position)
+            } yield (position, pawn)
 
           case Some(Queen)   =>
-            val pawnsOnTheWay: List[Pawn] = getPawnsOnTheWay(gameState, move)
-            pawnsOnTheWay match {
-              case List(pawn) => Some(pawn)
-              case _          => None
+            val pawnsOnTheWay: Map[PawnPosition, Pawn] = getPawnsOnTheWay(gameState, move)
+            pawnsOnTheWay.size match {
+              case 1 => Some(pawnsOnTheWay.head._1, pawnsOnTheWay.head._2)
+              case _ => None
             }
 
           case _             => None
         }
 
-      private def getPawnsOnTheWay(gameState: GameState, move: PawnMove): List[Pawn] = {
+      private def getPawnsOnTheWay(gameState: GameState, move: PawnMove): Map[PawnPosition, Pawn] = {
         val deltaX = move.to.x - move.from.x
         val deltaY = move.to.y - move.from.y
 
-        for {
-          dx          <- if (deltaX > 0) List.range(1, deltaX) else List.range(deltaX, 0)
-          dy          <- if (deltaY > 0) List.range(1, deltaY) else List.range(deltaY, 0)
+        (for {
+          dx           <- if (deltaX > 0) List.range(1, deltaX) else List.range(deltaX, 0)
+          dy           <- if (deltaY > 0) List.range(1, deltaY) else List.range(deltaY, 0)
           if dx.abs == dy.abs
           pawnPosition <- PawnPosition(move.from.x + dx, move.from.y + dy)
-          pawn         = gameState.board.pawnAt(pawnPosition)
+          pawn          = gameState.board.pawnAt(pawnPosition)
           if pawn.isDefined
-        } yield pawn.get
+        } yield pawnPosition -> pawn.get).toMap
+
       }
 
       private def getBoardAfterMove(gameState: GameState, move: PawnMove): Board = {
         val oldPawn = gameState.board.pawnAt(move.from).orNull
-        val newPawn = Pawn(oldPawn.side, oldPawn.pawnType, move.to)
+        val newPawn = Pawn(oldPawn.side, oldPawn.pawnType)
 
-        val smashedPawn: Option[Pawn] = getSmashedPawn(gameState, move)
+        val smashedPawn: Option[(PawnPosition, Pawn)] = getSmashedPawn(gameState, move)
 
         Board(
           gameState.board.pawns
-            .filterNot(_ == oldPawn)
-            .filterNot(_ == smashedPawn.orNull)
-            .appended(newPawn)
+            .filterNot(_._1 == move.from)
+            .filterNot(_._1 == smashedPawn.map(_._1).orNull)
+            ++ Map(move.to -> newPawn)
         )
       }
 
@@ -245,7 +251,7 @@ object ValidateMove {
           status = GameStatus.Ongoing,
           movesNow = gameState.movesNow,
           board = newBoard,
-          nextMoveBy = newBoard.pawnAt(move.to)
+          nextMoveFrom = if(newBoard.pawnAt(move.to).isDefined) Some(move.to) else None
         )
 
         isSthToSmash(newState)
@@ -253,21 +259,21 @@ object ValidateMove {
 
       //todo: add tests
       private def isBlocked(board: Board, side: Side): Boolean = {
-        val tempState = GameState(status = GameStatus.Ongoing, movesNow = side, board = board, nextMoveBy = None)
+        val tempState = GameState(status = GameStatus.Ongoing, movesNow = side, board = board, nextMoveFrom = None)
 
         if (isSthToSmash(tempState))
           false //player has sth to smash, so it is not blocked
         else { //nothing to smash - check if it is possible to move
           val availablePositions =
             for {
-              pawn    <- board.pawns.filter(_.side == side)
-              delta   <- List(-1, 1)
-              position <- if (pawn.pawnType == Queen)
-                           PawnPosition(pawn.position.x + delta, pawn.position.y + delta)
-                         else if (pawn.side == White)
-                           PawnPosition(pawn.position.x - 1, pawn.position.y + delta)
-                         else
-                           PawnPosition(pawn.position.x + 1, pawn.position.y + delta)
+              pawn     <- board.pawns.filter(_._2.side == side)
+              delta    <- List(-1, 1)
+              position <- if (pawn._2.pawnType == Queen)
+                            PawnPosition(pawn._1.x + delta, pawn._1.y + delta)
+                          else if (pawn._2.side == White)
+                            PawnPosition(pawn._1.x - 1, pawn._1.y + delta)
+                          else
+                            PawnPosition(pawn._1.x + 1, pawn._1.y + delta)
               if board.positionIsAvailable(position)
             } yield position
 
@@ -276,9 +282,9 @@ object ValidateMove {
       }
 
       private def checkNewStatus(
-        boardAfterMove: Board,
-        movesNow: Side,
-        nextMoveType: PawnMoveType
+                                  boardAfterMove: Board,
+                                  movesNow: Side,
+                                  nextMoveType: PawnMoveType
       ): GameStatus =
         nextMoveType match {
           case Single    =>
@@ -288,7 +294,7 @@ object ValidateMove {
               GameStatus.Ongoing
 
           case WithSmash =>
-            if (!boardAfterMove.pawns.exists(_.side == movesNow.opposite))
+            if (!boardAfterMove.pawns.exists(_._2.side == movesNow.opposite))
               GameStatus.makeWinner(movesNow)
             else
               GameStatus.Ongoing

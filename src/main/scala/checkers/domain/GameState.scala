@@ -3,10 +3,10 @@ package checkers.domain
 import checkers.domain.Side.White
 
 final case class GameState(
-  status: GameStatus = GameStatus.Ongoing,
-  movesNow: Side,
-  board: Board,
-  nextMoveBy: Option[Pawn] = None
+                            status: GameStatus = GameStatus.Ongoing,
+                            movesNow: Side,
+                            board: Board,
+                            nextMoveFrom: Option[PawnPosition] = None
 )
 
 object GameState {
@@ -15,7 +15,7 @@ object GameState {
       status = GameStatus.Ongoing,
       movesNow = White,
       board = Board.initial,
-      nextMoveBy = None
+      nextMoveFrom = None
     )
 
   //todo: remove default values from nextMoveBy and status
@@ -26,12 +26,11 @@ object GameState {
     status: String = "ongoing"
   ): Option[GameState] = {
 
-    val nextMoveByOption: Option[Pawn] = for {
+    val nextMoveByOption: Option[PawnPosition] = for {
       board        <- Board.fromString(board)
       index        <- nextMoveBy.toIntOption
       pawnPosition <- PawnPosition.fromIndex(index)
-      pawn         <- board.pawnAt(pawnPosition)
-    } yield pawn
+    } yield pawnPosition
 
     for {
       movesNow   <- Side.fromString(movesNow)

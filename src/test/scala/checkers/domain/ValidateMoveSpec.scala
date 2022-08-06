@@ -179,13 +179,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
     val pawnMove = PawnMove.fromString("13", "6").get
 
     //expected state
-    val expectedNextMoveBy = Some(
-      Pawn(
-        side = White,
-        pawnType = Regular,
-        position = PawnPosition(1, 4).get
-      )
-    )
+    val expectedNextMoveFrom: Option[PawnPosition] = PawnPosition(1, 4)
     val expectedStatus     = GameStatus.Ongoing
     val expectedMovesNow   = White
     val expectedBoard      = toBoard(s"""
@@ -198,7 +192,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w o o o
        o o o o
     """)
-    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveFrom)
 
     //Assertion
     ValidateMove.apply().apply(pawnMove, gameState) match {
@@ -228,13 +222,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
     val pawnMove = PawnMove.fromString("8", "1").get
 
     //expected state
-    val expectedNextMoveBy = Some(
-      Pawn(
-        side = White,
-        pawnType = Regular,
-        position = PawnPosition(0, 3).get
-      )
-    )
+    val expectedNextMoveFrom: Option[PawnPosition] = PawnPosition(0, 3)
     val expectedStatus     = GameStatus.Ongoing
     val expectedMovesNow   = White
     val expectedBoard      = toBoard(s"""
@@ -247,7 +235,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         w o o o
        o o o o
     """)
-    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveFrom)
 
     //Assertion
     ValidateMove.apply().apply(pawnMove, gameState) match {
@@ -449,13 +437,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
     val pawnMove = PawnMove.fromString("0", "23").get
 
     //expected state
-    val expectedNextMoveBy = Some(
-      Pawn(
-        side = White,
-        pawnType = Queen,
-        position = PawnPosition(5, 6).get
-      )
-    )
+    val expectedNextMoveFrom: Option[PawnPosition] = PawnPosition(5, 6)
     val expectedStatus     = GameStatus.Ongoing
     val expectedMovesNow   = White
     val expectedBoard      = toBoard(s"""
@@ -468,7 +450,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
         o o r o
        o o o o
     """)
-    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveBy)
+    val expectedGameState  = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveFrom)
 
     //Assertion
     ValidateMove.apply().apply(pawnMove, gameState) match {
@@ -490,7 +472,7 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
   }
 
   def compareGameStates(actual: GameState, expected: GameState): Assertion = {
-    assert(actual.nextMoveBy == expected.nextMoveBy)
+    assert(actual.nextMoveFrom == expected.nextMoveFrom)
     assert(actual.status == expected.status)
     assert(actual.movesNow == expected.movesNow)
     assert(actual.board.pawns.toSet == expected.board.pawns.toSet) //comparing pawnsList.toSet, because order of List[Pawn] inside Board object may differ

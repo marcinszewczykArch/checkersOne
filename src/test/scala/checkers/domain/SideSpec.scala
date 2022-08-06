@@ -7,7 +7,7 @@ import org.scalatest.matchers.should
 class SideSpec extends AnyFlatSpec with should.Matchers {
 
   "Side opposite" should "correctly returns the opposite side" in {
-    Red.opposite   shouldEqual White
+    Red.opposite shouldEqual White
     White.opposite shouldEqual Red
   }
 

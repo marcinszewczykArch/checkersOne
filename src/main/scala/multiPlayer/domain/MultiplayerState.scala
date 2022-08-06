@@ -7,7 +7,7 @@ import multiPlayer.MultiPlayerCodecs.multiplayerStateEncoder
 
 object MultiplayerState {
 
- val initial: MultiplayerState = MultiplayerState(List.empty, List.empty)
+  val initial: MultiplayerState = MultiplayerState(List.empty, List.empty)
 
 }
 
@@ -137,7 +137,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
 
             case None       => (this, Seq(SendToUser(player, WebsocketRoutes.ErrorRoute, "move input incorrect")))
             case Some(move) =>
-              ValidateMove.apply().apply(move, room.gameState) match {
+              ValidateMove().apply(move, room.gameState) match {
 
                 case Right(newGameState)   =>
                   val newRooms: List[Room]       = rooms.filterNot(_ == room) :+ Room(room.name, room.players, newGameState)

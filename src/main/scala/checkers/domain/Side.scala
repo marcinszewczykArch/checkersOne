@@ -23,5 +23,5 @@ object Side extends Enum[Side] {
     }
 
   case object White extends Side("w")
-  case object Red extends Side("r")
+  case object Red   extends Side("r")
 }

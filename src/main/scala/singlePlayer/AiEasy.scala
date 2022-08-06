@@ -23,7 +23,7 @@ object AiEasy {
         .fromString(moveFrom, moveTo)
         .get //.get can be used here as the number is always from defined range (from 0 to boardSize)
 
-    ValidateMove.apply().apply(move, state) match {
+    ValidateMove().apply(move, state) match {
       case Right(newState) =>
         println(moveFrom + " -> " + moveTo)
         Ok(newState.asJson)

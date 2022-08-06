@@ -8,9 +8,8 @@ import enumeratum.values.{StringEnum, StringEnumEntry}
 
 //todo: Polecam StringEnum tutaj. I w innych miejscach też.
 sealed abstract class GameStatus(val value: String) extends StringEnumEntry {
-def tag: String = value
+  def tag: String = value
 }
-
 
 object GameStatus extends StringEnum[GameStatus] {
   val values: IndexedSeq[GameStatus] = findValues
@@ -27,7 +26,6 @@ object GameStatus extends StringEnum[GameStatus] {
 //      case _            => None
 //    }
 
-  //todo: set się kojarzy z mutacją w miejscu. Użyłbym "makeWinner"
   def makeWinner(side: Side): GameStatus =
     side match {
       case White => WinWhite

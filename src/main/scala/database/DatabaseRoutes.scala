@@ -23,11 +23,11 @@ object DatabaseRoutes {
 
     case GET -> Root / "state"        =>
 //      val gameStates: List[GameStateTo] =
-        sql"select timestamp, status, movesNow, board, nextMoveBy, saveName from game_state"
-          .query[GameStateTo]
-          .to[List]
-          .transact(transactor)
-          .flatMap(Ok(_))
+      sql"select timestamp, status, movesNow, board, nextMoveFrom, saveName from game_state"
+        .query[GameStateTo]
+        .to[List]
+        .transact(transactor)
+        .flatMap(Ok(_))
 //          .unsafeRunSync()
 //      Ok(gameStates)
 
@@ -36,17 +36,17 @@ object DatabaseRoutes {
       implicit val encodeGameStateTo: EntityEncoder[IO, GameStateTo] = jsonEncoderOf[IO, GameStateTo]
 
       req.as[GameStateTo].flatMap { gameState: GameStateTo =>
-        val timestamp  = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss:SSS").format(LocalDateTime.now)
-        val status     = gameState.status
-        val movesNow   = gameState.movesNow
-        val board      = gameState.board
-        val nextMoveBy = gameState.nextMoveBy
-        val saveName   = gameState.saveName
+        val timestamp    = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss:SSS").format(LocalDateTime.now)
+        val status       = gameState.status
+        val movesNow     = gameState.movesNow
+        val board        = gameState.board
+        val nextMoveFrom = gameState.nextMoveFrom
+        val saveName     = gameState.saveName
 
         sql"""
           INSERT INTO
-              game_state (timestamp, status, movesNow, board, nextMoveBy, saveName)
-          VALUES ($timestamp, $status, $movesNow, $board, $nextMoveBy, $saveName)
+              game_state (timestamp, status, movesNow, board, nextMoveFrom, saveName)
+          VALUES ($timestamp, $status, $movesNow, $board, $nextMoveFrom, $saveName)
           """.update.run.transact(transactor).unsafeRunSync() //todo: jak wyżej.
 
         Ok(
@@ -55,7 +55,7 @@ object DatabaseRoutes {
             status,
             movesNow,
             board,
-            nextMoveBy,
+            nextMoveFrom,
             saveName
           )
         )
@@ -72,7 +72,7 @@ object DatabaseRoutes {
     status: String,
     movesNow: String,
     board: String,
-    nextMoveBy: String,
+    nextMoveFrom: String,
     saveName: String
   )
 }

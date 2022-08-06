@@ -1,14 +1,12 @@
 package checkers.domain
 
 import checkers.domain.Board.EMPTY_POSITION
-import checkers.domain.PawnPosition.{availablePositions, toIndex}
-import checkers.domain.PawnType.Regular
+import checkers.domain.PawnPosition._
+import checkers.domain.PawnType.{Queen, Regular}
 import checkers.domain.Side.{Red, White}
 
 import scala.util.Try
 
-//todo: Również czy zakładamy sytuację że plansza może by pusta? Jeżeli nie to pomyślałbym o NonEmptyList
-//todo: Jeżeli w ogóle zakładamy że Pawn może okupowa jedno unikalne pole, to pomyślałbym o (NonEmpty)Mapie
 final case class Board(pawns: Map[PawnPosition, Pawn]) {
 
   def positionIsAvailable(position: PawnPosition): Boolean = pawnAt(position).isEmpty
@@ -18,13 +16,8 @@ final case class Board(pawns: Map[PawnPosition, Pawn]) {
   def promoteForQueen(): Board =
     pawns
       .filter(_._2.pawnType == Regular)
-      .find(o => (o._1.x == PawnPosition.MIN && o._2.side == White) || (o._1.x == PawnPosition.MAX && o._2.side == Red))
-      .map((pawnToPromote: (PawnPosition, Pawn)) =>
-        Board(
-          pawns.filterNot(_ == pawnToPromote)
-            ++ Map(pawnToPromote._1 -> Pawn(pawnToPromote._2.side, PawnType.Queen))
-        )
-      )
+      .find(o => (o._1.x == MIN && o._2.side == White) || (o._1.x == MAX && o._2.side == Red))
+      .map(o => Board(pawns + (o._1 -> Pawn(o._2.side, Queen))))
       .getOrElse(this)
 
   //todo: Co byś powiedział na zrobienie tego przez Show?
@@ -54,28 +47,6 @@ object Board {
 
   def initial: Board = fromString("rrrrrrrrrrrroooooooowwwwwwwwwwww").get
 
-//  def fromString(board: String): Option[BoardNew] =
-//    board.length match {
-//      case 32 =>
-//        board
-//          .split("")
-//          .zipWithIndex
-//          .filter(o => o._1 != EMPTY_POSITION)
-//          .map(o => (Side.fromString(o._1), PawnType.fromString(o._1), PawnPosition.fromIndex(o._2)))
-//          .map {
-//            case (Some(side), Some(pawnType), Some(pawnPosition)) => Some(pawnPosition -> Pawn(side, pawnType))
-//            case _                                                => None
-//          }
-//          .toList
-//          .traverse(identity) match {
-//          case Some(pawns) => Some(Board(pawns))
-//          case _           => None
-//        }
-//
-//      case _  => None
-//    }
-
-  //todo: get rid of .get???
   def fromString(board: String): Option[Board] =
     board.length match {
       case 32 =>
@@ -86,7 +57,7 @@ object Board {
               .zipWithIndex
               .filter(o => o._1 != EMPTY_POSITION)
               .map { o =>
-                val pawnPosition = PawnPosition.fromIndex(o._2).get
+                val pawnPosition = fromIndex(o._2).get
                 val pawnSide     = Side.fromString(o._1).get
                 val pawnType     = PawnType.fromString(o._1).get
                 pawnPosition -> Pawn(pawnSide, pawnType)
@@ -96,27 +67,5 @@ object Board {
         ).toOption
       case _  => None
     }
-
-//  def fromString(board: String): Option[Board] =
-//    board.length match {
-//      case 32 =>
-//        val pawnsWithIndex: Array[(String, Int)] = board
-//          .split("")
-//          .zipWithIndex
-//          .filter(o => o._1 != EMPTY_POSITION)
-//
-//        val pawnsMap: Map[PawnPosition, Pawn] = (
-//          for {
-//            pawn: (String, Int)        <- pawnsWithIndex
-//            pawnPosition: PawnPosition <- PawnPosition.fromIndex(pawn._2)
-//            pawnSide: Side             <- Side.fromString(pawn._1)
-//            pawnType: PawnType         <- PawnType.fromString(pawn._1)
-//          } yield pawnPosition -> Pawn(pawnSide, pawnType)
-//        ).toMap
-//
-//        Try(Board(pawnsMap)).toOption
-//
-//      case _  => None
-//    }
 
 }

@@ -17,48 +17,45 @@ object SinglePlayerRoutes {
 
     case GET -> Root => Ok("Server is running...")
 
-    //todo: GET with parameters if GameState is not saved on the server side
     case GET -> Root / "checkers" :?
         boardQueryParamMatcher(board) +&
         currentColourQueryParamMatcher(currentColour) +&
-        nextMoveByQueryParamMatcher(nextMoveBy) +&
+        nextMoveFromQueryParamMatcher(nextMoveFrom) +&
         statusQueryParamMatcher(status) +&
         moveFromQueryParamMatcher(moveFrom) +&
         moveToQueryParamMatcher(moveTo) =>
-      val state: GameState = GameState.fromString(board, currentColour, nextMoveBy, status).get //todo deal with .get
-      val move: PawnMove   = PawnMove.fromString(moveFrom, moveTo).get                          //todo: deal with .get
+      val validationResult = for {
+        state <- GameState.fromString(board, currentColour, nextMoveFrom, status)
+        move  <- PawnMove.fromString(moveFrom, moveTo)
+      } yield ValidateMove().apply(move, state)
 
-      ValidateMove.apply().apply(move, state) match {
-        case Right(newState)       => Ok(newState.asJson)
-        case Left(validationError) => NotAcceptable(validationError.show)
+      validationResult match {
+        case Some(result) =>
+          result match {
+            case Right(newState)       => Ok(newState.asJson)
+            case Left(validationError) => NotAcceptable(validationError.show)
+          }
+        case _            => NotAcceptable("invalid input")
       }
 
     case GET -> Root / "initialstate" => Ok(GameState.initial.asJson)
 
-    //todo: POST with body if GameState is saved on the server side (request is changing the state)
-    //    case req@POST -> Root / "checkers" =>
-    //      val move = req.as[PawnMove]
-    //      val state: GameState = GameState.fromString(board, currentColour)
-    //      val move: PawnMove = PawnMove.fromString(moveFrom, moveTo)
-    //
-    //      ValidateMove.apply().apply(move, state) match {
-    //        case Right(newState) => Ok(newState.asJson)
-    //        case Left(validationError) => NotAcceptable(validationError.show)
-    //      }
-
     case GET -> Root / "checkersAi" :?
         boardQueryParamMatcher(board) +&
-        nextMoveByQueryParamMatcher(nextMoveBy) +&
+        nextMoveFromQueryParamMatcher(nextMoveFrom) +&
         statusQueryParamMatcher(status) +&
         currentColourQueryParamMatcher(currentColour) =>
-      val state: GameState = GameState.fromString(board, currentColour, nextMoveBy, status).get //todo deal with .get
-      Thread.sleep(500)
-      makeAiMove(state)
+      GameState.fromString(board, currentColour, nextMoveFrom, status) match {
+        case Some(state) =>
+          Thread.sleep(500) //delay the AI move to make it easier to notice on the frontend side
+          makeAiMove(state)
+        case _           => NotAcceptable("invalid input")
+      }
   }
 
   object boardQueryParamMatcher         extends QueryParamDecoderMatcher[String]("board")
   object currentColourQueryParamMatcher extends QueryParamDecoderMatcher[String]("currentColour")
-  object nextMoveByQueryParamMatcher    extends QueryParamDecoderMatcher[String]("nextMoveBy")
+  object nextMoveFromQueryParamMatcher  extends QueryParamDecoderMatcher[String]("nextMoveFrom")
   object statusQueryParamMatcher        extends QueryParamDecoderMatcher[String]("status")
   object moveFromQueryParamMatcher      extends QueryParamDecoderMatcher[String]("moveFrom")
   object moveToQueryParamMatcher        extends QueryParamDecoderMatcher[String]("moveTo")

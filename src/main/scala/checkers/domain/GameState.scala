@@ -3,10 +3,10 @@ package checkers.domain
 import checkers.domain.Side.White
 
 final case class GameState(
-                            status: GameStatus = GameStatus.Ongoing,
-                            movesNow: Side,
-                            board: Board,
-                            nextMoveFrom: Option[PawnPosition] = None
+  status: GameStatus = GameStatus.Ongoing,
+  movesNow: Side,
+  board: Board,
+  nextMoveFrom: Option[PawnPosition] = None
 )
 
 object GameState {
@@ -18,17 +18,15 @@ object GameState {
       nextMoveFrom = None
     )
 
-  //todo: remove default values from nextMoveBy and status
   def fromString(
     board: String,
     movesNow: String,
-    nextMoveBy: String = "None",
-    status: String = "ongoing"
+    nextMoveFrom: String,
+    status: String
   ): Option[GameState] = {
 
-    val nextMoveByOption: Option[PawnPosition] = for {
-      board        <- Board.fromString(board)
-      index        <- nextMoveBy.toIntOption
+    val nextMoveFromOption: Option[PawnPosition] = for {
+      index        <- nextMoveFrom.toIntOption
       pawnPosition <- PawnPosition.fromIndex(index)
     } yield pawnPosition
 
@@ -36,7 +34,7 @@ object GameState {
       movesNow   <- Side.fromString(movesNow)
       board      <- Board.fromString(board)
       gameStatus <- GameStatus.withValueOpt(status.toLowerCase)
-    } yield GameState(gameStatus, movesNow, board, nextMoveByOption)
+    } yield GameState(gameStatus, movesNow, board, nextMoveFromOption)
 
   }
 

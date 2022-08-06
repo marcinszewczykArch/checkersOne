@@ -69,7 +69,7 @@ object ValidateMove {
 
       def pawnIsCorrectIfMultipleSmashingContinues(gameState: GameState, move: PawnMove): ErrorOr[PawnMove] =
         Either.cond(
-          test = gameState.nextMoveFrom.isEmpty || gameState.nextMoveFrom == gameState.board.pawnAt(move.from),
+          test = gameState.nextMoveFrom.isEmpty || gameState.nextMoveFrom.get == move.from,
           right = move,
           left = ContinueMultipleSmashing
         )
@@ -83,8 +83,7 @@ object ValidateMove {
 
       def moveTypeIsCorrect(moveType: PawnMoveType, isWithSmash: Boolean): ErrorOr[PawnMoveType] =
         Either.cond(
-          test =
-            (isWithSmash && moveType == PawnMoveType.WithSmash) || (!isWithSmash && moveType == PawnMoveType.Single),
+          test = (isWithSmash && moveType == WithSmash) || (!isWithSmash && moveType == Single),
           right = moveType,
           left = MoveTypeIsIncorrect
         )
@@ -139,11 +138,15 @@ object ValidateMove {
         val opponent = movesNow.opposite
 
         move.from.x - move.to.x match {
-          case 1 if movesNow == White                                                => Right(Single)
-          case -1 if movesNow == Red                                                 => Right(Single)
-          case 2 if getPawnsOnTheWay(gameState, move).exists(_._2.side == opponent)  => Right(WithSmash)
-          case -2 if getPawnsOnTheWay(gameState, move).exists(_._2.side == opponent) => Right(WithSmash)
-          case _                                                                     => Left(IllegalMove)
+          case 1 if movesNow == White => Right(Single)
+          case 1 if movesNow == Red   => Left(BackwardMoveNotAllowed)
+
+          case -1 if movesNow == Red   => Right(Single)
+          case -1 if movesNow == White => Left(BackwardMoveNotAllowed)
+
+          case 2 | -2 if getPawnsOnTheWay(gameState, move).exists(_._2.side == opponent) => Right(WithSmash)
+
+          case _ => Left(TooLongMoveForRegular)
         }
       }
 
@@ -161,7 +164,7 @@ object ValidateMove {
       private def isSthToSmash(gameState: GameState): Boolean = {
 
         val pawnsToAnalyze: Map[PawnPosition, Pawn] = gameState.nextMoveFrom
-          .map(o => Map(o -> gameState.board.pawnAt(o).get)) //todo:  gameState.board.pawnAt(o).get can return None
+          .map(o => Map(o -> gameState.board.pawnAt(o).get))
           .getOrElse(gameState.board.pawns.filter(_._2.side == gameState.movesNow))
 
         val movesWithSmashForRegular = for {
@@ -228,30 +231,25 @@ object ValidateMove {
       }
 
       private def getBoardAfterMove(gameState: GameState, move: PawnMove): Board = {
-        val oldPawn = gameState.board.pawnAt(move.from).orNull
-        val newPawn = Pawn(oldPawn.side, oldPawn.pawnType)
-
-        val smashedPawn: Option[(PawnPosition, Pawn)] = getSmashedPawn(gameState, move)
+        val pawn: Pawn                        = gameState.board.pawnAt(move.from).orNull
+        val smashedPawnPosition: PawnPosition = getSmashedPawn(gameState, move).map(_._1).orNull
 
         Board(
           gameState.board.pawns
-            .filterNot(_._1 == move.from)
-            .filterNot(_._1 == smashedPawn.map(_._1).orNull)
-            ++ Map(move.to -> newPawn)
+            - move.from
+            - smashedPawnPosition
+            + (move.to -> pawn)
         )
       }
 
       private def checkNextToSmash(gameState: GameState, move: PawnMove): Boolean = {
-
         val newBoard: Board = getBoardAfterMove(gameState, move)
-
-        //todo: check if game is finish (newBoard has only one colour pawns)
 
         val newState: GameState = GameState(
           status = GameStatus.Ongoing,
           movesNow = gameState.movesNow,
           board = newBoard,
-          nextMoveFrom = if(newBoard.pawnAt(move.to).isDefined) Some(move.to) else None
+          nextMoveFrom = if (newBoard.pawnAt(move.to).isDefined) Some(move.to) else None
         )
 
         isSthToSmash(newState)
@@ -263,7 +261,7 @@ object ValidateMove {
 
         if (isSthToSmash(tempState))
           false //player has sth to smash, so it is not blocked
-        else { //nothing to smash - check if it is possible to move
+        else { //nothing to smash - check if it is possible to move without smash
           val availablePositions =
             for {
               pawn     <- board.pawns.filter(_._2.side == side)
@@ -282,9 +280,9 @@ object ValidateMove {
       }
 
       private def checkNewStatus(
-                                  boardAfterMove: Board,
-                                  movesNow: Side,
-                                  nextMoveType: PawnMoveType
+        boardAfterMove: Board,
+        movesNow: Side,
+        nextMoveType: PawnMoveType
       ): GameStatus =
         nextMoveType match {
           case Single    =>

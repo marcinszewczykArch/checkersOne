@@ -31,7 +31,7 @@ object MultiPlayerRoutes {
           val player: Player = Player(playerName)
 
           val entryStream: Stream[IO, InputMessage]   =
-            Stream.emits(Seq(Chat(player, s"Welcome in checkersOne ${player.name}!")))
+            Stream.emits(Seq(Chat(player, s"Welcome to checkersOne ${player.name}!")))
           val playersInGame: Stream[IO, InputMessage] = Stream.emits(Seq(EnterGame(player)))
 
           val parsedWebSocketInput: Stream[IO, InputMessage] = wsfStream.collect {

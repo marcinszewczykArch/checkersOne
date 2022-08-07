@@ -105,6 +105,26 @@ object Doobie {
             VALUES ($timestamp, $status, $movesNow, $boardWithMultipleSmashingAndAnother, $nextMoveFrom, $saveWithMultipleSmashingAndAnother)
             """
 
+    //insert state multiple smashing with queen
+    val boardWithMultipleSmashingWithQueen       = "oooooooooroooorrWooooorroooooooo"
+    val saveWithMultipleSmashingWithQueen        = "state with multiple smashing with queen"
+    val insertStateWithMultipleSmashingWithQueen =
+      sql"""
+        INSERT INTO
+            game_state (timestamp, status, movesNow, board, nextMoveFrom, saveName)
+            VALUES ($timestamp, $status, $movesNow, $boardWithMultipleSmashingWithQueen, $nextMoveFrom, $saveWithMultipleSmashingWithQueen)
+            """
+
+    //insert state with blocked player
+    val boardWithBlockedPlayer       = "ooooooorWorroowroowwoowooooooooo"
+    val saveWithBlockedPlayer        = "state with blocked player"
+    val insertStateWithBlockedPlayer =
+      sql"""
+        INSERT INTO
+            game_state (timestamp, status, movesNow, board, nextMoveFrom, saveName)
+            VALUES ($timestamp, $status, $movesNow, $boardWithBlockedPlayer, $nextMoveFrom, $saveWithBlockedPlayer)
+            """
+
     dropGameStateTable.update.run *>
       createGameStateTable.update.run *>
       insertInitialState.update.run *>
@@ -112,7 +132,9 @@ object Doobie {
       insertStateWithGettingQueen.update.run *>
       insertStateWithNotGettingQueen.update.run *>
       insertStateWithMultipleSmash.update.run *>
-      insertStateWithMultipleSmashingAndAnother.update.run
+      insertStateWithMultipleSmashingAndAnother.update.run *>
+      insertStateWithBlockedPlayer.update.run *>
+      insertStateWithMultipleSmashingWithQueen.update.run
 
   }.transact(transactor)
 

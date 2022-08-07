@@ -264,14 +264,18 @@ object ValidateMove {
         else { //nothing to smash - check if it is possible to move without smash
           val availablePositions =
             for {
-              pawn     <- board.pawns.filter(_._2.side == side)
-              delta    <- List(-1, 1)
-              position <- if (pawn._2.pawnType == Queen)
-                            PawnPosition(pawn._1.x + delta, pawn._1.y + delta)
-                          else if (pawn._2.side == White)
-                            PawnPosition(pawn._1.x - 1, pawn._1.y + delta)
-                          else
-                            PawnPosition(pawn._1.x + 1, pawn._1.y + delta)
+              pawn      <- board.pawns.filter(_._2.side == side)
+              delta     <- List(-1, 1)
+              positions <- if (pawn._2.pawnType == Queen)
+                             List(
+                               PawnPosition(pawn._1.x + 1, pawn._1.y + delta),
+                               PawnPosition(pawn._1.x - 1, pawn._1.y + delta)
+                             )
+                           else if (pawn._2.side == White)
+                             List(PawnPosition(pawn._1.x - 1, pawn._1.y + delta))
+                           else
+                             List(PawnPosition(pawn._1.x + 1, pawn._1.y + delta))
+              position  <- positions
               if board.positionIsAvailable(position)
             } yield position
 

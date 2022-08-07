@@ -1,7 +1,6 @@
 package checkers.domain
 
 import checkers.domain.MoveValidationError.{MoveIsNotDiagonal, WrongPawnColor}
-import checkers.domain.PawnType.{Queen, Regular}
 import checkers.domain.Side.{Red, White}
 import org.scalatest.Assertion
 import org.scalatest.flatspec.AnyFlatSpec
@@ -450,6 +449,49 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
        o o o o
     """)
     val expectedGameState                          = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveFrom)
+
+    //Assertion
+    ValidateMove().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Right == Left(error))
+    }
+  }
+
+  "Pawn" should "not be blocked" in {
+    //initial state
+    val nextMoveFrom = None
+    val status       = GameStatus.Ongoing
+    val movesNow     = Red
+    val board        = toBoard(s"""
+        o o W o
+       o o o o
+        o o o r
+       o o o o
+        o o o o
+       o o o o
+        o o o o
+       R o o o
+    """)
+    val gameState    = GameState(status, movesNow, board, nextMoveFrom)
+
+    //move
+    val pawnMove = PawnMove.fromString("28", "7").get
+
+    //expected state
+    val expectedNextMoveFrom = None
+    val expectedStatus       = GameStatus.Ongoing
+    val expectedMovesNow     = White
+    val expectedBoard        = toBoard(s"""
+        o o W o
+       o o o R
+        o o o r
+       o o o o
+        o o o o
+       o o o o
+        o o o o
+       o o o o
+    """)
+    val expectedGameState    = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveFrom)
 
     //Assertion
     ValidateMove().apply(pawnMove, gameState) match {

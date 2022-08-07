@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Run tests
-      run: sbt test
+      run: sbt coverage test
     - name: Coverage Report
       run: sbt coverageReport
     - name: Upload coverage reports to Codecov with GitHub Action

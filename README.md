@@ -1,0 +1,1 @@
+[![Scala CI](https://github.com/marcinszewczykArch/checkersOne/actions/workflows/scala.yml/badge.svg)](https://github.com/marcinszewczykArch/checkersOne/actions/workflows/scala.yml)

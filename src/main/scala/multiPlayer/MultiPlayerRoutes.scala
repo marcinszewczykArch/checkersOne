@@ -7,6 +7,7 @@ import fs2.{Pipe, Stream}
 import io.circe.syntax.EncoderOps
 import multiPlayer.domain._
 import org.http4s.HttpRoutes
+import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
 import org.http4s.circe._
 import org.http4s.dsl.io._
 import org.http4s.server.websocket.WebSocketBuilder
@@ -49,8 +50,8 @@ object MultiPlayerRoutes {
         // Build the WebSocket handler
         WebSocketBuilder[IO].build(toClient, inputPipe)
 
-      case GET -> Root / "players"         => Ok(state.get.unsafeRunSync().players.map(_.name).asJson)
+      case GET -> Root / "players"         => state.get.map(_.players.map(_.name)).flatMap(Ok(_))
 
-      case GET -> Root / "rooms"           => Ok(state.get.unsafeRunSync().rooms.map(_.name).asJson)
+      case GET -> Root / "rooms"           => state.get.map(_.rooms.map(_.name)).flatMap(Ok(_))
     }
 }

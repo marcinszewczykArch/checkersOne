@@ -13,10 +13,9 @@ import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.CORS
 import singlePlayer.SinglePlayerRoutes
-import scala.concurrent.duration._
-import io.circe.syntax.EncoderOps
 
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 object Server {
 
@@ -45,7 +44,7 @@ object Server {
         // Stream to keep alive idle WebSockets by sending current state to all players every 5 seconds
         val keepAlive = Stream
           .awakeEvery[IO](5.seconds)
-          .map(_ => KeepAlive(ref.get.unsafeRunSync()))
+          .map(_ => KeepAlive(ref.get.flatMap(IO(_))))
           .through(topic.publish)
 
         Stream(httpStream, processingStream, keepAlive).parJoinUnbounded.compile.drain

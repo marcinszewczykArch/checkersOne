@@ -1,7 +1,6 @@
 package multiPlayer.domain
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
 import io.circe.syntax.EncoderOps
 import multiPlayer.MultiPlayerCodecs.multiplayerStateEncoder
 
@@ -29,8 +28,8 @@ case class SendToUsers(
 }
 
 case class KeepAlive(
-  state: MultiplayerState
+  state: IO[MultiplayerState]
 ) extends OutputMessage {
   override def forPlayer(targetPlayer: Player) = true
-  override def toString: String                = WebsocketRoutes.StateRoute.tag + state.asJson.toString()
+  override def toString: String                = WebsocketRoutes.StateRoute.tag + state.map(_.asJson.toString()).unsafeRunSync()
 }

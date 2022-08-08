@@ -2,11 +2,13 @@ package multiPlayer
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import fs2.{Pipe, Stream}
 import fs2.concurrent.{Queue, Topic}
-import multiPlayer.domain.{Chat, EnterGame, InputMessage, LeaveGame, MultiplayerState, OutputMessage, Player}
+import fs2.{Pipe, Stream}
+import io.circe.syntax.EncoderOps
+import multiPlayer.domain._
 import org.http4s.HttpRoutes
-import org.http4s.dsl.io.{->, /, GET, Root}
+import org.http4s.circe._
+import org.http4s.dsl.io._
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.{Close, Text}
@@ -46,6 +48,9 @@ object MultiPlayerRoutes {
 
         // Build the WebSocket handler
         WebSocketBuilder[IO].build(toClient, inputPipe)
-    }
 
+      case GET -> Root / "players"         => Ok(state.get.unsafeRunSync().players.map(_.name).asJson)
+
+      case GET -> Root / "rooms"           => Ok(state.get.unsafeRunSync().rooms.map(_.name).asJson)
+    }
 }

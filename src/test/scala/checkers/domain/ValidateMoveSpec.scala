@@ -156,6 +156,49 @@ class ValidateMoveSpec extends AnyFlatSpec with should.Matchers {
     }
   }
 
+  "Move with final queen smash" should "give correct state" in {
+    //initial state
+    val nextMoveFrom = None
+    val status       = GameStatus.Ongoing
+    val movesNow     = White
+    val board        = toBoard(s"""
+         o o o W
+        o o o o
+         o w o o
+        w w o o
+         o o o w
+        o o o o
+         r o o o
+        o o o o
+    """)
+    val gameState    = GameState(status, movesNow, board, nextMoveFrom)
+
+    //move
+    val pawnMove = PawnMove.fromString("3", "28").get
+
+    //expected state
+    val expectedNextMoveFrom = None
+    val expectedStatus       = GameStatus.WinWhite
+    val expectedMovesNow     = Red
+    val expectedBoard        = toBoard(s"""
+         o o o o
+        o o o o
+         o w o o
+        w w o o
+         o o o w
+        o o o o
+         o o o o
+        W o o o
+    """)
+    val expectedGameState    = GameState(expectedStatus, expectedMovesNow, expectedBoard, expectedNextMoveFrom)
+
+    //Assertion
+    ValidateMove().apply(pawnMove, gameState) match {
+      case Right(actualGameState: GameState) => compareGameStates(actualGameState, expectedGameState)
+      case Left(error: MoveValidationError)  => assert(Left(error) == Right)
+    }
+  }
+
   "Move with multiple smash" should "give correct state" in {
     //initial state
     val nextMoveFrom = None

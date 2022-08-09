@@ -7,12 +7,13 @@ import io.circe.syntax.EncoderOps
 import org.http4s.Response
 import org.http4s.circe._
 import org.http4s.dsl.io._
+import singlePlayer.AiMedium.{evaluateMove, generateMove}
 
 import scala.annotation.tailrec
 object AiEasy {
 
   @tailrec
-  def makeAiMove(state: GameState): IO[Response[IO]] = {
+  def makeAiMoveEasy(state: GameState): IO[Response[IO]] = {
     import scala.util.Random
     val boardSize        = PawnPosition.availablePositions.size
     val moveFrom: String = Random.between(0, boardSize).toString
@@ -27,8 +28,30 @@ object AiEasy {
       case Right(newState) =>
         println(moveFrom + " -> " + moveTo)
         Ok(newState.asJson)
-      case Left(_)         => makeAiMove(state)
+      case Left(_)         => makeAiMoveEasy(state)
     }
+  }
+
+  def makeAiMoveMedium(state: GameState): IO[Response[IO]] = {
+    val allMoves = (0 to 10_000)
+      .map(_ => generateMove())
+      .map(move => evaluateMove(move, state))
+      .filter(_.isDefined)
+      .sortBy(_.get._2)
+      .reverse
+
+    val bestMove = allMoves
+      .head
+      .map(o => ValidateMove().apply(o._1, state))
+      .get
+
+    bestMove match {
+      case Right(newState) => Ok(newState.asJson)
+      case Left(_)         => NotAcceptable("no move options found")
+    }
+
+
+
   }
 
 }

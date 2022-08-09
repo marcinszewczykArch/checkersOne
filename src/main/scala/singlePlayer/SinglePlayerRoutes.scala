@@ -9,7 +9,7 @@ import org.http4s.HttpRoutes
 import org.http4s.circe._
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
 import org.http4s.dsl.io._
-import singlePlayer.AiEasy.makeAiMove
+import singlePlayer.AiEasy._
 
 object SinglePlayerRoutes {
 
@@ -48,7 +48,7 @@ object SinglePlayerRoutes {
       GameState.fromString(board, currentColour, nextMoveFrom, status) match {
         case Some(state) =>
           Thread.sleep(500) //delay the AI move to make it easier to notice on the frontend side
-          makeAiMove(state)
+          makeAiMoveMedium(state)
         case _           => NotAcceptable("invalid input")
       }
   }

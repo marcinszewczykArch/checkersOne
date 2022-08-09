@@ -19,7 +19,7 @@ object Ai {
     }
 
   def makeAiMoveMedium(state: GameState): IO[Response[IO]] = {
-    val bestMove = generateAllMovesCombinations()
+    val bestMove = generateAllMovesCombinations(state)
       .map(move => (move, ValidateMove().apply(move, state)))
       .filter(o => o._2.isRight)
       .map(o => (o._1, getMoveValue(state, o._2.right.get)))
@@ -34,16 +34,21 @@ object Ai {
     }
   }
 
-  private def generateAllMovesCombinations(): List[PawnMove] =
+  private def generateAllMovesCombinations(state: GameState): List[PawnMove] =
     (for {
       fx      <- 0 to 8
       fy      <- 0 to 8
       moveFrom = PawnPosition(fx, fy)
+      if moveFrom.isDefined
+
       tx      <- 0 to 8
       ty      <- 0 to 8
       moveTo   = PawnPosition(tx, ty)
-      if moveFrom.isDefined && moveTo.isDefined
-    } yield PawnMove(moveFrom.get, moveTo.get)).toList
+      if moveTo.isDefined
+
+      move     = PawnMove(moveFrom.get, moveTo.get)
+      if ValidateMove().apply(move, state).isRight
+    } yield move).toList
 
   private def getMoveValue(state: GameState, newState: GameState): Int = {
     var sum = 0
@@ -53,8 +58,8 @@ object Ai {
     if (ValidateMove.isSthToSmash(newState) && state.movesNow == newState.movesNow) //next to smash after move
       sum = sum + 2
     if (
-      ValidateMove.isSthToSmash(GameState(state.status, state.movesNow.opposite, state.board)) && !ValidateMove
-        .isSthToSmash(newState) && state.movesNow != newState.movesNow
+      ValidateMove.isSthToSmash(GameState(state.status, state.movesNow.opposite, state.board)) &&
+      !ValidateMove.isSthToSmash(newState) && state.movesNow != newState.movesNow
     )                                                                               //opponent has sth to smash and we want to block it
       sum = sum + 2
     if (

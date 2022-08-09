@@ -9,7 +9,7 @@ import org.http4s.HttpRoutes
 import org.http4s.circe._
 import org.http4s.dsl.impl.QueryParamDecoderMatcher
 import org.http4s.dsl.io._
-import singlePlayer.AiEasy._
+import singlePlayer.Ai._
 
 object SinglePlayerRoutes {
 

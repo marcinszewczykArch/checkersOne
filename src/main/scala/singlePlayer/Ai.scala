@@ -9,6 +9,7 @@ import org.http4s.circe._
 import org.http4s.dsl.io._
 
 import scala.annotation.tailrec
+
 object Ai {
 
   @tailrec

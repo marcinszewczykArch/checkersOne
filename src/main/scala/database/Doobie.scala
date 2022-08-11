@@ -10,15 +10,6 @@ import java.time.format.DateTimeFormatter
 
 object Doobie {
 
-//  val operation1: ConnectionIO[String] = "42".pure[ConnectionIO]
-//  val result1: IO[String]              = operation1.transact(transactor)
-//
-//  val operation2: ConnectionIO[List[String]] = sql"select name from city limit 5".query[String].to[List]
-//  val result2: IO[List[String]]              = operation2.transact(transactor)
-//
-//  val operation3             = sql"SELECT name FROM person".query[Int].to[List]
-//  val result3: IO[List[Int]] = operation3.transact(transactor)
-
   val initialSchema = {
 
     //drop table

@@ -3,7 +3,7 @@ package multiPlayer
 import io.circe.generic.semiauto
 import io.circe.{Encoder, Json}
 import multiPlayer.domain.{MultiplayerState, Player, Room}
-import checkers.CheckersCodecs._ //todo: this import is required, bud intellij is cleaning it on the fly
+import checkers.CheckersCodecs._ //this import is required, bud intellij is cleaning it on the fly
 
 object MultiPlayerCodecs {
 

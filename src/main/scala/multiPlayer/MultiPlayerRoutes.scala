@@ -4,11 +4,9 @@ import cats.effect.IO
 import cats.effect.concurrent.Ref
 import fs2.concurrent.{Queue, Topic}
 import fs2.{Pipe, Stream}
-import io.circe.syntax.EncoderOps
 import multiPlayer.domain._
 import org.http4s.HttpRoutes
 import org.http4s.circe.CirceEntityCodec.circeEntityEncoder
-import org.http4s.circe._
 import org.http4s.dsl.io._
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.websocket.WebSocketFrame
@@ -52,6 +50,6 @@ object MultiPlayerRoutes {
 
       case GET -> Root / "players"         => state.get.map(_.players.map(_.name)).flatMap(Ok(_))
 
-      case GET -> Root / "rooms"           => state.get.map(_.rooms.map(_.name)).flatMap(Ok(_))
+      case GET -> Root / "rooms" => state.get.map(_.rooms.map(_.name)).flatMap(Ok(_))
     }
 }

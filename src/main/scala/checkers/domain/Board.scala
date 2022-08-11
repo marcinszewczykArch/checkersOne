@@ -1,5 +1,6 @@
 package checkers.domain
 
+import cats.Show
 import checkers.domain.Board.EMPTY_POSITION
 import checkers.domain.PawnPosition._
 import checkers.domain.PawnType.{Queen, Regular}
@@ -19,12 +20,18 @@ final case class Board(pawns: Map[PawnPosition, Pawn]) {
       .find(o => (o._1.x == MIN && o._2.side == White) || (o._1.x == MAX && o._2.side == Red))
       .map(o => Board(pawns + (o._1 -> Pawn(o._2.side, Queen))))
       .getOrElse(this)
+}
 
-  //todo: Co byś powiedział na zrobienie tego przez Show?
-  override def toString: String = {
+object Board {
+
+  final val EMPTY_POSITION = "o"
+
+  def initial: Board = fromString("rrrrrrrrrrrroooooooowwwwwwwwwwww").get
+
+  implicit val showBoard: Show[Board] = board => {
 
     val boardArray: Map[Int, (PawnType, Side)] =
-      pawns.map(o => (toIndex(o._1), (o._2.pawnType, o._2.side)))
+      board.pawns.map(o => (toIndex(o._1), (o._2.pawnType, o._2.side)))
 
     availablePositions.indices
       .map(n =>
@@ -38,14 +45,6 @@ final case class Board(pawns: Map[PawnPosition, Pawn]) {
       )
       .mkString("")
   }
-
-}
-
-object Board {
-
-  final val EMPTY_POSITION = "o"
-
-  def initial: Board = fromString("rrrrrrrrrrrroooooooowwwwwwwwwwww").get
 
   def fromString(board: String): Option[Board] =
     board.length match {

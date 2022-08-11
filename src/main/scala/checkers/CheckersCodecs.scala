@@ -1,5 +1,7 @@
 package checkers
 
+import cats.syntax.show._
+import checkers.domain.Board.showBoard
 import checkers.domain._
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, Json}
@@ -31,7 +33,7 @@ object CheckersCodecs {
   implicit val gameStatusDecoder: Decoder[GameStatus] =
     Decoder.decodeString.emap(tag => GameStatus.withValueOpt(tag.toLowerCase).toRight("Invalid GameStatus"))
 
-  implicit val boardEncoder: Encoder[Board] = Encoder.instance { board: Board => Json.fromString(board.toString) }
+  implicit val boardEncoder: Encoder[Board] = Encoder.instance { board: Board => Json.fromString(board.show) }
   implicit val boardDecoder: Decoder[Board] = Decoder.decodeString.emap(Board.fromString(_).toRight("Invalid Board"))
 
 }

@@ -1,9 +1,12 @@
 package database
 
+import cats.Show
 import cats.implicits.catsSyntaxApply
 import checkers.domain.{Board, GameStatus, Side}
 import database.DbTransactor.transactor
 import doobie.implicits._
+import cats.syntax.show._
+import checkers.domain.Board.showBoard
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -35,7 +38,7 @@ object Doobie {
     val timestamp    = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss:SSS").format(LocalDateTime.now)
     val status       = GameStatus.Ongoing.tag
     val movesNow     = Side.White.tag
-    val board        = Board.initial.toString
+    val board        = Board.initial.show
     val nextMoveFrom = ""
     val saveName     = "initial state"
 

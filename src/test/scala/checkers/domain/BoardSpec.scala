@@ -4,6 +4,8 @@ import checkers.domain.PawnType.Regular
 import checkers.domain.Side.{Red, White}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
+import cats.syntax.show._
+import checkers.domain.Board.showBoard
 
 class BoardSpec extends AnyFlatSpec with should.Matchers {
 
@@ -11,7 +13,7 @@ class BoardSpec extends AnyFlatSpec with should.Matchers {
     assert(initialBoard equals Board.initial)
   }
   "Initial board toString" should "work" in {
-    assert(initialBoardString equals Board.initial.toString)
+    assert(initialBoardString equals Board.initial.show)
   }
   "Initial board fromString" should "work" in {
     assert(Board.fromString(initialBoardString).get equals Board.initial)

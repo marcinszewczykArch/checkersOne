@@ -49,7 +49,6 @@ class GameStateSpec extends AnyFlatSpec with should.Matchers {
       .isDefined shouldEqual false
   }
 
-  //todo: this behaviour for nextMoveFrom can be simplified
   "Game state with incorrect nextMoveFrom" should "be valid and have nextMoveFrom not defined" in {
     GameState
       .fromString(

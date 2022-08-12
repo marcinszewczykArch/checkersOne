@@ -1,0 +1,62 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package checkers.domain {
+
+    class Side {
+        + Side White
+        + Side Red
+    }
+
+    Enum GameStatus {
+        + GameStatus WinWhite
+        + GameStatus WinRed
+        + GameStatus Draw
+        + GameStatus Ongoing
+    }
+
+    class PawnPosition {
+        + Int x
+        + Int y
+    }
+
+    class Pawn {
+        + Side side
+        + PawnType type
+    }
+
+    Enum PawnType {
+        + PieceType Regular
+        + PieceType Queen
+    }
+
+    class Board {
+        + Map<PawnPosition, Pawn> pawns
+    }
+
+    class PawnMove {
+        + PawnPosition from
+        + PawnPosition to
+    }
+
+    class GameState {
+        + GameStatus status
+        + Side movesNow
+        + Board board
+        + nextMoveFrom Option[PawnPosition]
+    }
+}
+
+GameState -->  GameStatus : uses
+GameState --> Side : uses
+GameState --> Board : uses
+GameState --> PawnPosition : uses
+
+Board --> PawnPosition : uses
+Board --> Pawn : uses
+
+Pawn --> PawnType : uses
+Pawn --> Side : uses
+
+PawnMove --> PawnPosition : uses
+@enduml

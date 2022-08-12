@@ -1,7 +1,6 @@
 package checkers.domain
 
 import cats.Show
-import checkers.domain.Board.EMPTY_POSITION
 import checkers.domain.PawnPosition._
 import checkers.domain.PawnType.{Queen, Regular}
 import checkers.domain.Side.{Red, White}

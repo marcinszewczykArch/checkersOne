@@ -20,14 +20,22 @@ object Ai {
     }
 
   def makeAiMoveMedium(state: GameState): IO[Response[IO]] = {
-    val bestMove = generateAllMovesCombinations(state)
-      .map(move => (move, ValidateMove().apply(move, state)))
-      .filter(o => o._2.isRight)
-      .map(o => (o._1, getMoveValue(state, o._2.right.get)))
+    val movesWithValues: List[(PawnMove, Int)] = generateAllMovesCombinationsWithValue(state)
+
+    val bestValue: Int = movesWithValues
       .sortBy(_._2)
       .reverse
       .head
-      ._1
+      ._2
+
+    import scala.util.Random
+    val bestMove = Random
+      .shuffle(
+        movesWithValues
+          .filter(_._2 == bestValue)
+      )
+      .head
+      ._1 //shuffle list of moves to avoid repeating the same movement
 
     ValidateMove().apply(bestMove, state) match {
       case Right(newState) => Ok(newState.asJson)
@@ -35,21 +43,23 @@ object Ai {
     }
   }
 
-  private def generateAllMovesCombinations(state: GameState): List[PawnMove] =
+  private def generateAllMovesCombinationsWithValue(state: GameState): List[(PawnMove, Int)] =
     (for {
-      fx      <- 0 to 8
-      fy      <- 0 to 8
-      moveFrom = PawnPosition(fx, fy)
+      fx       <- 0 to 8
+      fy       <- 0 to 8
+      moveFrom  = PawnPosition(fx, fy)
       if moveFrom.isDefined
 
-      tx      <- 0 to 8
-      ty      <- 0 to 8
-      moveTo   = PawnPosition(tx, ty)
+      tx       <- 0 to 8
+      ty       <- 0 to 8
+      moveTo    = PawnPosition(tx, ty)
       if moveTo.isDefined
 
-      move     = PawnMove(moveFrom.get, moveTo.get)
-      if ValidateMove().apply(move, state).isRight
-    } yield move).toList
+      move      = PawnMove(moveFrom.get, moveTo.get)
+      newState  = ValidateMove().apply(move, state)
+      if newState.isRight
+      moveValue = getMoveValue(state, newState.right.get)
+    } yield (move, moveValue)).toList
 
   private def getMoveValue(state: GameState, newState: GameState): Int = {
     var sum = 0

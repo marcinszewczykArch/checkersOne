@@ -19,7 +19,7 @@ case class SendToUser(
 }
 
 case class SendToUsers(
-  players: List[Player],
+  players: Set[Player],
   prefix: WebsocketRoutes,
   text: String
 ) extends OutputMessage {

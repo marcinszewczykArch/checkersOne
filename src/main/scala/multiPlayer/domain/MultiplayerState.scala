@@ -5,13 +5,15 @@ import checkers.domain.{PawnMove, ValidateMove}
 import io.circe.syntax.EncoderOps
 import multiPlayer.MultiPlayerCodecs.multiplayerStateEncoder
 
+import scala.:+
+
 object MultiplayerState {
 
-  val initial: MultiplayerState = MultiplayerState(List.empty, List.empty)
+  val initial: MultiplayerState = MultiplayerState(Set.empty, List.empty)
 
 }
 
-case class MultiplayerState(players: List[Player], rooms: List[Room]) {
+case class MultiplayerState(players: Set[Player], rooms: List[Room]) {
 
   def process(msg: InputMessage): (MultiplayerState, Seq[OutputMessage]) =
     msg match {
@@ -26,12 +28,12 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
     }
 
   private def enterGame(player: Player): (MultiplayerState, Seq[OutputMessage]) = {
-    val newState = MultiplayerState(players :+ player, this.rooms)
+    val newState = MultiplayerState(players + player, this.rooms)
     (newState, sendStateToAll(newState))
   }
 
   private def leaveGame(player: Player): (MultiplayerState, Seq[OutputMessage]) = {
-    val newPlayers: List[Player] = players.filterNot(_ == player)
+    val newPlayers: Set[Player] = players.filterNot(_ == player)
 
     findRoomByPlayer(player) match {
       case Some(room) =>
@@ -85,7 +87,6 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
 
   private def findRoomByName(roomName: String): Option[Room] = rooms.find(_.name == roomName)
 
-  //helpers
   private def sendToRoom(
     room: Room,
     prefix: WebsocketRoutes,
@@ -131,7 +132,6 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
 
   private def sendErrorMsg(player: Player) = (this, Seq(SendToUser(player, WebsocketRoutes.None, "incorrect ws input")))
 
-  //todo: refactor
   private def makeMove(
     player: Player,
     moveFrom: String,
@@ -161,7 +161,7 @@ case class MultiplayerState(players: List[Player], rooms: List[Room]) {
       case None       => (this, Seq(SendToUser(player, WebsocketRoutes.None, "you are not in room")))
     }
 
-  private def getRoomPlayers(room: Room): List[Player] =
-    List(room.playerWhite, room.playerRed).filter(_.isDefined).map(_.get)
+  private def getRoomPlayers(room: Room): Set[Player] =
+    Set(room.playerWhite, room.playerRed).filter(_.isDefined).map(_.get)
 
 }

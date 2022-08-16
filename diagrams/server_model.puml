@@ -1,0 +1,114 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Main {
+    + IO<ExitCode> run(Array<String> args)
+}
+
+class Server<IO<_>> {
+    + IO<ExitCode> start()
+}
+
+
+    class DatabaseRoutes<HttpRoutes[IO]> {
+        + HttpRoutes routes(): HttpRoutes[IO]
+    }
+
+'class GameState {
+'    + GameStatus status
+'    + Side movesNow
+'    + Board board
+'    + nextMoveFrom Option[PawnPosition]
+'}
+
+
+'class CheckersCodecs {
+'}
+
+'
+
+    class SinglePlayerRoutes<HttpRoutes[IO]> {
+        + HttpRoutes routes(): HttpRoutes[IO]
+    }
+'
+'    class SingleplayerCodecs {
+'    }
+'
+'    class Ai {
+'    }
+
+
+
+
+    class MultiPlayerRoutes<HttpRoutes[IO]> {
+        + HttpRoutes routes(): HttpRoutes[IO]
+    }
+
+    class DB {
+        + initialSchema()
+    }
+
+'    class MultiplayerCodecs {
+'    }
+
+'    class MultiplayerState {
+'        + List<Player> players
+'        + List<Room> rooms
+'    }
+
+'    class Player {
+'        + String name
+'    }
+'
+'    class Room {
+'        + String name
+'        + Player playerWhite
+'        + Player playerRed
+'        + GameState gameState
+'    }
+
+
+
+'server
+Main ---> Server : starts
+Main ---> DB : generate
+Server ---> MultiPlayerRoutes : uses
+Server ---> SinglePlayerRoutes : uses
+Server ---> DatabaseRoutes : uses
+
+'database
+'DatabaseRoutes ---> CheckersCodecs : uses
+'DatabaseRoutes ---> GameState : uses
+
+'singleplayer domain
+'SinglePlayerRoutes --> CheckersCodecs : uses
+'SinglePlayerRoutes --> SingleplayerCodecs : uses
+'SinglePlayerRoutes --> GameState : uses
+'SinglePlayerRoutes --> Ai : uses
+
+'multiplayer domain
+'MultiPlayerRoutes ---> MultiplayerState : uses
+'MultiPlayerRoutes --> CheckersCodecs : uses
+'MultiPlayerRoutes --> MultiplayerCodecs : uses
+'MultiplayerState -->  Room : uses
+'MultiplayerState -->  Player : uses
+
+
+'Room -left->  Player : uses
+'Room -->  GameState : uses
+
+'checkers domain
+'GameState -->  GameStatus : uses
+'GameState --> Side : uses
+'GameState --> Board : uses
+'GameState --> PawnPosition : uses
+'
+'Board --> PawnPosition : uses
+'Board --> Pawn : uses
+'
+'Pawn --> PawnType : uses
+'Pawn --> Side : uses
+'
+'PawnMove --> PawnPosition : uses
+
+@enduml

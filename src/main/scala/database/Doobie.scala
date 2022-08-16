@@ -1,9 +1,8 @@
 package database
 
-import cats.Show
 import cats.implicits.catsSyntaxApply
 import checkers.domain.{Board, GameStatus, Side}
-import database.DbTransactor.transactor
+import database.DatabaseTransactor.transactor
 import doobie.implicits._
 import cats.syntax.show._
 import checkers.domain.Board.showBoard

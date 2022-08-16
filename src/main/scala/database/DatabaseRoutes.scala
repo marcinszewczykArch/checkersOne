@@ -3,7 +3,7 @@ package database
 import cats.effect.IO
 import checkers.CheckersCodecs._
 import checkers.domain.GameState
-import database.DbTransactor.transactor
+import database.DatabaseTransactor.transactor
 import doobie.implicits._
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}

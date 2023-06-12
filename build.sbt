@@ -1,6 +1,17 @@
 name := "checkersOne"
 version := "0.1"
 scalaVersion := "2.13.8"
+assembly / mainClass := Some("Main")
+assembly / assemblyJarName := name.value + ".jar"
+assemblyMergeStrategy / assembly := {
+  case PathList(ps@_*) if ps.last endsWith ".properties" => MergeStrategy.concat
+  case PathList(ps@_*) if ps.last == "module-info.class" => MergeStrategy.discard
+  case PathList(ps@_*) if ps.last endsWith "Binder.class" => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assembly / assemblyMergeStrategy).value
+    oldStrategy(x)
+}
+
 
 val http4sVersion    = "0.21.22" //"0.23.12" <- Queue from cats-effect-std
 val CirceVersion     = "0.14.0-M5"
@@ -37,3 +48,4 @@ libraryDependencies ++= Seq(
 //  "org.typelevel"     %% "cats-effect-kernel"   % catsVersion,
 //  "org.typelevel"     %% "cats-effect-std"      % catsVersion
 )
+

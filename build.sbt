@@ -3,7 +3,7 @@ version := "0.1"
 scalaVersion := "2.13.8"
 assembly / mainClass := Some("Main")
 assembly / assemblyJarName := name.value + ".jar"
-assemblyMergeStrategy / assembly := {
+assemblyMergeStrategy in assembly := {
   case PathList(ps@_*) if ps.last endsWith ".properties" => MergeStrategy.concat
   case PathList(ps@_*) if ps.last == "module-info.class" => MergeStrategy.discard
   case PathList(ps@_*) if ps.last endsWith "Binder.class" => MergeStrategy.first

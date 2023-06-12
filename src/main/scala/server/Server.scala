@@ -27,7 +27,7 @@ object Server {
       queue <- Queue.unbounded[IO, InputMessage]
       topic <- Topic[IO, OutputMessage](SendToUsers(Set.empty, WebsocketRoutes.None, ""))
       ref   <- Ref.of[IO, MultiplayerState](MultiplayerState.initial)
-      port  <- ConcurrentEffect[IO].delay(sys.env.get("PORT").flatMap(_.toIntOption).getOrElse(9000))
+      port  <- ConcurrentEffect[IO].delay(sys.env.get("PORT").flatMap(_.toIntOption).getOrElse(8000))
 
       exitCode <- {
 
